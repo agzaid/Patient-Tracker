@@ -12,12 +12,14 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IJwtService _jwtService;
     private readonly IConfiguration _configuration;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration, IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
         _jwtService = jwtService;
         _configuration = configuration;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -26,7 +28,7 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser != null)
         {
-            throw new InvalidOperationException("User with this email already exists");
+            throw new BusinessException(ErrorCodes.UserAlreadyExists);
         }
 
         // Create new user
@@ -38,7 +40,7 @@ public class AuthService : IAuthService
             UpdatedAt = DateTime.UtcNow
         };
 
-        user = await _userRepository.CreateAsync(user);
+        _userRepository.Add(user);
 
         // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(new UserDto
@@ -58,7 +60,9 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _userRepository.CreateRefreshTokenAsync(refreshTokenEntity);
+        _userRepository.CreateRefreshTokenAsync(refreshTokenEntity);
+
+        await _unitOfWork.CompleteAsync();
 
         return new AuthResponse
         {
@@ -100,7 +104,9 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _userRepository.CreateRefreshTokenAsync(refreshTokenEntity);
+        _userRepository.CreateRefreshTokenAsync(refreshTokenEntity);
+
+        await _unitOfWork.CompleteAsync();
 
         return new AuthResponse
         {
@@ -121,25 +127,25 @@ public class AuthService : IAuthService
         var refreshToken = await _userRepository.GetRefreshTokenAsync(request.RefreshToken);
         if (refreshToken == null || refreshToken.IsRevoked || refreshToken.IsUsed || refreshToken.ExpiresAt < DateTime.UtcNow)
         {
-            throw new InvalidOperationException("Invalid refresh token");
+            throw new BusinessException(ErrorCodes.InvalidToken);
         }
 
         var principal = _jwtService.GetPrincipalFromExpiredToken(refreshToken.Token);
         if (principal == null)
         {
-            throw new InvalidOperationException("Invalid access token");
+            throw new BusinessException(ErrorCodes.InvalidToken);
         }
 
         var userId = int.Parse(principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            throw new BusinessException(ErrorCodes.UserNotFound);
         }
 
         // Mark the refresh token as used
         refreshToken.IsUsed = true;
-        await _userRepository.UpdateRefreshTokenAsync(refreshToken);
+        _userRepository.UpdateRefreshTokenAsync(refreshToken);
 
         // Generate new tokens
         var accessToken = _jwtService.GenerateAccessToken(new UserDto
@@ -159,7 +165,9 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _userRepository.CreateRefreshTokenAsync(newRefreshTokenEntity);
+        _userRepository.CreateRefreshTokenAsync(newRefreshTokenEntity);
+
+        await _unitOfWork.CompleteAsync();
 
         return new AuthResponse
         {

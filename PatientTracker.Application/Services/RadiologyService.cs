@@ -8,11 +8,13 @@ public class RadiologyService : IRadiologyService
 {
     private readonly IRadiologyRepository _radiologyRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RadiologyService(IRadiologyRepository radiologyRepository, IUserRepository userRepository)
+    public RadiologyService(IRadiologyRepository radiologyRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _radiologyRepository = radiologyRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<RadiologyScanDto>> GetRadiologyScansAsync(int userId)
@@ -77,21 +79,22 @@ public class RadiologyService : IRadiologyService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdRadiology = await _radiologyRepository.CreateAsync(radiology);
+        _radiologyRepository.Add(radiology);
+        await _unitOfWork.CompleteAsync();
 
         return new RadiologyScanDto
         {
-            Id = createdRadiology.Id,
-            ScanType = createdRadiology.ScanType,
-            BodyPart = createdRadiology.BodyPart,
-            ScanDate = createdRadiology.ScanDate,
-            Description = createdRadiology.Description,
-            DoctorNotes = createdRadiology.DoctorNotes,
-            ReportUrl = createdRadiology.ReportUrl,
-            HospitalName = createdRadiology.HospitalName,
-            DoctorName = createdRadiology.DoctorName,
-            CreatedAt = createdRadiology.CreatedAt,
-            UpdatedAt = createdRadiology.UpdatedAt
+            Id = radiology.Id,
+            ScanType = radiology.ScanType,
+            BodyPart = radiology.BodyPart,
+            ScanDate = radiology.ScanDate,
+            Description = radiology.Description,
+            DoctorNotes = radiology.DoctorNotes,
+            ReportUrl = radiology.ReportUrl,
+            HospitalName = radiology.HospitalName,
+            DoctorName = radiology.DoctorName,
+            CreatedAt = radiology.CreatedAt,
+            UpdatedAt = radiology.UpdatedAt
         };
     }
 
@@ -111,21 +114,22 @@ public class RadiologyService : IRadiologyService
         scan.DoctorName = request.DoctorName;
         scan.UpdatedAt = DateTime.UtcNow;
 
-        var updatedScan = await _radiologyRepository.UpdateAsync(scan);
+        _radiologyRepository.Update(scan);
+        await _unitOfWork.CompleteAsync();
 
         return new RadiologyScanDto
         {
-            Id = updatedScan.Id,
-            ScanType = updatedScan.ScanType,
-            BodyPart = updatedScan.BodyPart,
-            ScanDate = updatedScan.ScanDate,
-            Description = updatedScan.Description,
-            DoctorNotes = updatedScan.DoctorNotes,
-            ReportUrl = updatedScan.ReportUrl,
-            HospitalName = updatedScan.HospitalName,
-            DoctorName = updatedScan.DoctorName,
-            CreatedAt = updatedScan.CreatedAt,
-            UpdatedAt = updatedScan.UpdatedAt
+            Id = scan.Id,
+            ScanType = scan.ScanType,
+            BodyPart = scan.BodyPart,
+            ScanDate = scan.ScanDate,
+            Description = scan.Description,
+            DoctorNotes = scan.DoctorNotes,
+            ReportUrl = scan.ReportUrl,
+            HospitalName = scan.HospitalName,
+            DoctorName = scan.DoctorName,
+            CreatedAt = scan.CreatedAt,
+            UpdatedAt = scan.UpdatedAt
         };
     }
 
@@ -135,6 +139,8 @@ public class RadiologyService : IRadiologyService
         if (scan == null || scan.UserId != userId)
             return false;
 
-        return await _radiologyRepository.DeleteAsync(id);
+        _radiologyRepository.Delete(scan);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 }

@@ -8,11 +8,13 @@ public class SurgeryService : ISurgeryService
 {
     private readonly ISurgeryRepository _surgeryRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SurgeryService(ISurgeryRepository surgeryRepository, IUserRepository userRepository)
+    public SurgeryService(ISurgeryRepository surgeryRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _surgeryRepository = surgeryRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<SurgeryDto>> GetSurgeriesAsync(int userId)
@@ -78,20 +80,21 @@ public class SurgeryService : ISurgeryService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdSurgery = await _surgeryRepository.CreateAsync(surgery);
+        _surgeryRepository.Add(surgery);
+        await _unitOfWork.CompleteAsync();
 
         return new SurgeryDto
         {
-            Id = createdSurgery.Id,
-            SurgeryName = createdSurgery.SurgeryName,
-            SurgeryDate = createdSurgery.SurgeryDate,
-            HospitalName = createdSurgery.HospitalName,
-            SurgeonName = createdSurgery.SurgeonName,
-            Description = createdSurgery.Description,
-            Notes = createdSurgery.Notes,
-            ReportUrl = createdSurgery.ReportUrl,
-            CreatedAt = createdSurgery.CreatedAt,
-            UpdatedAt = createdSurgery.UpdatedAt
+            Id = surgery.Id,
+            SurgeryName = surgery.SurgeryName,
+            SurgeryDate = surgery.SurgeryDate,
+            HospitalName = surgery.HospitalName,
+            SurgeonName = surgery.SurgeonName,
+            Description = surgery.Description,
+            Notes = surgery.Notes,
+            ReportUrl = surgery.ReportUrl,
+            CreatedAt = surgery.CreatedAt,
+            UpdatedAt = surgery.UpdatedAt
         };
     }
 
@@ -112,20 +115,21 @@ public class SurgeryService : ISurgeryService
         surgery.ReportUrl = request.ReportUrl;
         surgery.UpdatedAt = DateTime.UtcNow;
 
-        var updatedSurgery = await _surgeryRepository.UpdateAsync(surgery);
+        _surgeryRepository.Update(surgery);
+        await _unitOfWork.CompleteAsync();
 
         return new SurgeryDto
         {
-            Id = updatedSurgery.Id,
-            SurgeryName = updatedSurgery.SurgeryName,
-            SurgeryDate = updatedSurgery.SurgeryDate,
-            HospitalName = updatedSurgery.HospitalName,
-            SurgeonName = updatedSurgery.SurgeonName,
-            Description = updatedSurgery.Description,
-            Notes = updatedSurgery.Notes,
-            ReportUrl = updatedSurgery.ReportUrl,
-            CreatedAt = updatedSurgery.CreatedAt,
-            UpdatedAt = updatedSurgery.UpdatedAt
+            Id = surgery.Id,
+            SurgeryName = surgery.SurgeryName,
+            SurgeryDate = surgery.SurgeryDate,
+            HospitalName = surgery.HospitalName,
+            SurgeonName = surgery.SurgeonName,
+            Description = surgery.Description,
+            Notes = surgery.Notes,
+            ReportUrl = surgery.ReportUrl,
+            CreatedAt = surgery.CreatedAt,
+            UpdatedAt = surgery.UpdatedAt
         };
     }
 
@@ -137,6 +141,8 @@ public class SurgeryService : ISurgeryService
             return false;
         }
 
-        return await _surgeryRepository.DeleteAsync(id);
+        _surgeryRepository.Delete(surgery);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 }

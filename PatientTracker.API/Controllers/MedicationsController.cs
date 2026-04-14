@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class MedicationsController : ControllerBase
 {
     private readonly IMedicationService _medicationService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public MedicationsController(IMedicationService medicationService)
+    public MedicationsController(IMedicationService medicationService, IStringLocalizer<ErrorMessages> localizer)
     {
         _medicationService = medicationService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class MedicationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching medications" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingMedications"] });
         }
     }
 
@@ -52,14 +56,14 @@ public class MedicationsController : ControllerBase
             
             if (medication == null)
             {
-                return NotFound(new { error = "Medication not found" });
+                return NotFound(new { error = _localizer["MedicationNotFound"] });
             }
 
             return Ok(medication);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching medication" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingMedication"] });
         }
     }
 
@@ -83,7 +87,7 @@ public class MedicationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating medication" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingMedication"] });
         }
     }
 
@@ -108,7 +112,7 @@ public class MedicationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating medication" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingMedication"] });
         }
     }
 
@@ -130,11 +134,11 @@ public class MedicationsController : ControllerBase
                 return NotFound(new { error = "Medication not found" });
             }
 
-            return Ok(new { message = "Medication deleted successfully" });
+            return Ok(new { message = _localizer["MedicationDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting medication" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingMedication"] });
         }
     }
 

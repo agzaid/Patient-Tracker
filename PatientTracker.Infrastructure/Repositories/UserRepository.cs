@@ -5,20 +5,10 @@ using PatientTracker.Infrastructure.Data;
 
 namespace PatientTracker.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    private readonly ApplicationDbContext _context;
-
-    public UserRepository(ApplicationDbContext context)
+    public UserRepository(ApplicationDbContext context) : base(context)
     {
-        _context = context;
-    }
-
-    public async Task<User?> GetByIdAsync(int id)
-    {
-        return await _context.Users
-            .Include(u => u.Profile)
-            .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
@@ -28,30 +18,6 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User> CreateAsync(User user)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return user;
-    }
-
-    public async Task<User> UpdateAsync(User user)
-    {
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
-        return user;
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return false;
-
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
     public async Task<RefreshToken?> GetRefreshTokenAsync(string token)
     {
         return await _context.RefreshTokens
@@ -59,18 +25,16 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(rt => rt.Token == token);
     }
 
-    public async Task<RefreshToken> CreateRefreshTokenAsync(RefreshToken refreshToken)
+    public Task<RefreshToken> CreateRefreshTokenAsync(RefreshToken refreshToken)
     {
         _context.RefreshTokens.Add(refreshToken);
-        await _context.SaveChangesAsync();
-        return refreshToken;
+        return Task.FromResult(refreshToken);
     }
 
-    public async Task<RefreshToken?> UpdateRefreshTokenAsync(RefreshToken refreshToken)
+    public Task<RefreshToken?> UpdateRefreshTokenAsync(RefreshToken refreshToken)
     {
         _context.RefreshTokens.Update(refreshToken);
-        await _context.SaveChangesAsync();
-        return refreshToken;
+        return Task.FromResult<RefreshToken?>(refreshToken);
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(string token)
@@ -79,7 +43,6 @@ public class UserRepository : IUserRepository
         if (refreshToken == null) return false;
 
         refreshToken.IsRevoked = true;
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -94,7 +57,6 @@ public class UserRepository : IUserRepository
             token.IsRevoked = true;
         }
 
-        await _context.SaveChangesAsync();
         return true;
     }
 }

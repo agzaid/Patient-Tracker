@@ -15,6 +15,7 @@ public class SharedLinkService : ISharedLinkService
     private readonly IRadiologyService _radiologyService;
     private readonly IDiagnosisService _diagnosisService;
     private readonly ISurgeryService _surgeryService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public SharedLinkService(
         ISharedLinkRepository sharedLinkRepository,
@@ -24,7 +25,8 @@ public class SharedLinkService : ISharedLinkService
         ILabTestService labTestService,
         IRadiologyService radiologyService,
         IDiagnosisService diagnosisService,
-        ISurgeryService surgeryService)
+        ISurgeryService surgeryService,
+        IUnitOfWork unitOfWork)
     {
         _sharedLinkRepository = sharedLinkRepository;
         _userRepository = userRepository;
@@ -34,6 +36,7 @@ public class SharedLinkService : ISharedLinkService
         _radiologyService = radiologyService;
         _diagnosisService = diagnosisService;
         _surgeryService = surgeryService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<SharedLinkDto>> GetSharedLinksAsync(int userId)
@@ -87,18 +90,19 @@ public class SharedLinkService : ISharedLinkService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdLink = await _sharedLinkRepository.CreateAsync(link);
+        _sharedLinkRepository.Add(link);
+        await _unitOfWork.CompleteAsync();
 
         return new SharedLinkDto
         {
-            Id = createdLink.Id,
-            Token = createdLink.Token,
-            ExpiresAt = createdLink.ExpiresAt,
+            Id = link.Id,
+            Token = link.Token,
+            ExpiresAt = link.ExpiresAt,
             Categories = request.Categories,
-            IsActive = createdLink.IsActive,
-            AccessCount = createdLink.AccessCount,
-            CreatedAt = createdLink.CreatedAt,
-            UpdatedAt = createdLink.UpdatedAt
+            IsActive = link.IsActive,
+            AccessCount = link.AccessCount,
+            CreatedAt = link.CreatedAt,
+            UpdatedAt = link.UpdatedAt
         };
     }
 
@@ -110,7 +114,9 @@ public class SharedLinkService : ISharedLinkService
             return false;
         }
 
-        return await _sharedLinkRepository.DeleteAsync(id);
+        _sharedLinkRepository.Delete(link);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 
     public async Task<bool> ToggleSharedLinkAsync(int id, int userId)
@@ -123,7 +129,8 @@ public class SharedLinkService : ISharedLinkService
 
         link.IsActive = !link.IsActive;
         link.UpdatedAt = DateTime.UtcNow;
-        await _sharedLinkRepository.UpdateAsync(link);
+        _sharedLinkRepository.Update(link);
+        await _unitOfWork.CompleteAsync();
         return true;
     }
 

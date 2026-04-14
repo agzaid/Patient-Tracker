@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class SurgeriesController : ControllerBase
 {
     private readonly ISurgeryService _surgeryService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public SurgeriesController(ISurgeryService surgeryService)
+    public SurgeriesController(ISurgeryService surgeryService, IStringLocalizer<ErrorMessages> localizer)
     {
         _surgeryService = surgeryService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class SurgeriesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching surgeries" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingSurgeries"] });
         }
     }
 
@@ -52,14 +56,14 @@ public class SurgeriesController : ControllerBase
             
             if (surgery == null)
             {
-                return NotFound(new { error = "Surgery not found" });
+                return NotFound(new { error = _localizer["SurgeryNotFound"] });
             }
 
             return Ok(surgery);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching surgery" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingSurgery"] });
         }
     }
 
@@ -83,7 +87,7 @@ public class SurgeriesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating surgery" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingSurgery"] });
         }
     }
 
@@ -108,7 +112,7 @@ public class SurgeriesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating surgery" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingSurgery"] });
         }
     }
 
@@ -130,11 +134,11 @@ public class SurgeriesController : ControllerBase
                 return NotFound(new { error = "Surgery not found" });
             }
 
-            return Ok(new { message = "Surgery deleted successfully" });
+            return Ok(new { message = _localizer["SurgeryDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting surgery" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingSurgery"] });
         }
     }
 

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class RadiologyController : ControllerBase
 {
     private readonly IRadiologyService _radiologyService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public RadiologyController(IRadiologyService radiologyService)
+    public RadiologyController(IRadiologyService radiologyService, IStringLocalizer<ErrorMessages> localizer)
     {
         _radiologyService = radiologyService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class RadiologyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching radiology scans" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingRadiologyScans"] });
         }
     }
 
@@ -52,14 +56,14 @@ public class RadiologyController : ControllerBase
             
             if (scan == null)
             {
-                return NotFound(new { error = "Radiology scan not found" });
+                return NotFound(new { error = _localizer["RadiologyNotFound"] });
             }
 
             return Ok(scan);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching radiology scan" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingRadiologyScan"] });
         }
     }
 
@@ -83,7 +87,7 @@ public class RadiologyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating radiology scan" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingRadiology"] });
         }
     }
 
@@ -108,7 +112,7 @@ public class RadiologyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating radiology scan" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingRadiology"] });
         }
     }
 
@@ -130,11 +134,11 @@ public class RadiologyController : ControllerBase
                 return NotFound(new { error = "Radiology scan not found" });
             }
 
-            return Ok(new { message = "Radiology scan deleted successfully" });
+            return Ok(new { message = _localizer["RadiologyDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting radiology scan" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingRadiology"] });
         }
     }
 

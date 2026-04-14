@@ -78,6 +78,21 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>Access denied. You don't have permission to perform this action</value>
   </data>
+  <data name="ErrorDuringRegistration" xml:space="preserve">
+    <value>An error occurred during registration</value>
+  </data>
+  <data name="ErrorDuringLogin" xml:space="preserve">
+    <value>An error occurred during login</value>
+  </data>
+  <data name="ErrorDuringTokenRefresh" xml:space="preserve">
+    <value>An error occurred during token refresh</value>
+  </data>
+  <data name="ErrorDuringLogout" xml:space="preserve">
+    <value>An error occurred during logout</value>
+  </data>
+  <data name="LoggedOutSuccessfully" xml:space="preserve">
+    <value>Logged out successfully</value>
+  </data>
   
   <!-- Validation -->
   <data name="ValidationError" xml:space="preserve">
@@ -128,6 +143,146 @@
   </data>
   <data name="ProfileDeletedSuccessfully" xml:space="preserve">
     <value>Profile deleted successfully</value>
+  </data>
+  
+  <!-- Medication -->
+  <data name="MedicationNotFound" xml:space="preserve">
+    <value>Medication not found</value>
+  </data>
+  <data name="ErrorCreatingMedication" xml:space="preserve">
+    <value>An error occurred while creating medication</value>
+  </data>
+  <data name="ErrorUpdatingMedication" xml:space="preserve">
+    <value>An error occurred while updating medication</value>
+  </data>
+  <data name="ErrorDeletingMedication" xml:space="preserve">
+    <value>An error occurred while deleting medication</value>
+  </data>
+  <data name="MedicationDeletedSuccessfully" xml:space="preserve">
+    <value>Medication deleted successfully</value>
+  </data>
+  
+  <!-- Lab Test -->
+  <data name="LabTestNotFound" xml:space="preserve">
+    <value>Lab test not found</value>
+  </data>
+  <data name="ErrorCreatingLabTest" xml:space="preserve">
+    <value>An error occurred while creating lab test</value>
+  </data>
+  <data name="ErrorUpdatingLabTest" xml:space="preserve">
+    <value>An error occurred while updating lab test</value>
+  </data>
+  <data name="ErrorDeletingLabTest" xml:space="preserve">
+    <value>An error occurred while deleting lab test</value>
+  </data>
+  <data name="LabTestDeletedSuccessfully" xml:space="preserve">
+    <value>Lab test deleted successfully</value>
+  </data>
+  
+  <!-- Radiology -->
+  <data name="RadiologyNotFound" xml:space="preserve">
+    <value>Radiology scan not found</value>
+  </data>
+  <data name="ErrorCreatingRadiology" xml:space="preserve">
+    <value>An error occurred while creating radiology scan</value>
+  </data>
+  <data name="ErrorUpdatingRadiology" xml:space="preserve">
+    <value>An error occurred while updating radiology scan</value>
+  </data>
+  <data name="ErrorDeletingRadiology" xml:space="preserve">
+    <value>An error occurred while deleting radiology scan</value>
+  </data>
+  <data name="RadiologyDeletedSuccessfully" xml:space="preserve">
+    <value>Radiology scan deleted successfully</value>
+  </data>
+  
+  <!-- Diagnosis -->
+  <data name="DiagnosisNotFound" xml:space="preserve">
+    <value>Diagnosis not found</value>
+  </data>
+  <data name="ErrorCreatingDiagnosis" xml:space="preserve">
+    <value>An error occurred while creating diagnosis</value>
+  </data>
+  <data name="ErrorUpdatingDiagnosis" xml:space="preserve">
+    <value>An error occurred while updating diagnosis</value>
+  </data>
+  <data name="ErrorDeletingDiagnosis" xml:space="preserve">
+    <value>An error occurred while deleting diagnosis</value>
+  </data>
+  <data name="DiagnosisDeletedSuccessfully" xml:space="preserve">
+    <value>Diagnosis deleted successfully</value>
+  </data>
+  
+  <!-- Surgery -->
+  <data name="SurgeryNotFound" xml:space="preserve">
+    <value>Surgery not found</value>
+  </data>
+  <data name="ErrorCreatingSurgery" xml:space="preserve">
+    <value>An error occurred while creating surgery</value>
+  </data>
+  <data name="ErrorUpdatingSurgery" xml:space="preserve">
+    <value>An error occurred while updating surgery</value>
+  </data>
+  <data name="ErrorDeletingSurgery" xml:space="preserve">
+    <value>An error occurred while deleting surgery</value>
+  </data>
+  <data name="SurgeryDeletedSuccessfully" xml:space="preserve">
+    <value>Surgery deleted successfully</value>
+  </data>
+  
+  <!-- Shared Link -->
+  <data name="SharedLinkNotFound" xml:space="preserve">
+    <value>Shared link not found</value>
+  </data>
+  <data name="ErrorCreatingSharedLink" xml:space="preserve">
+    <value>An error occurred while creating shared link</value>
+  </data>
+  <data name="ErrorDeletingSharedLink" xml:space="preserve">
+    <value>An error occurred while deleting shared link</value>
+  </data>
+  <data name="SharedLinkDeletedSuccessfully" xml:space="preserve">
+    <value>Shared link deleted successfully</value>
+  </data>
+  <data name="ErrorFetchingSharedLinks" xml:space="preserve">
+    <value>An error occurred while fetching shared links</value>
+  </data>
+  <data name="ErrorTogglingSharedLink" xml:space="preserve">
+    <value>An error occurred while toggling shared link</value>
+  </data>
+  <data name="SharedLinkStatusUpdatedSuccessfully" xml:space="preserve">
+    <value>Shared link status updated successfully</value>
+  </data>
+  
+  <!-- Generic Fetching Errors -->
+  <data name="ErrorFetchingMedications" xml:space="preserve">
+    <value>An error occurred while fetching medications</value>
+  </data>
+  <data name="ErrorFetchingMedication" xml:space="preserve">
+    <value>An error occurred while fetching medication</value>
+  </data>
+  <data name="ErrorFetchingLabTests" xml:space="preserve">
+    <value>An error occurred while fetching lab tests</value>
+  </data>
+  <data name="ErrorFetchingLabTest" xml:space="preserve">
+    <value>An error occurred while fetching lab test</value>
+  </data>
+  <data name="ErrorFetchingRadiologyScans" xml:space="preserve">
+    <value>An error occurred while fetching radiology scans</value>
+  </data>
+  <data name="ErrorFetchingRadiologyScan" xml:space="preserve">
+    <value>An error occurred while fetching radiology scan</value>
+  </data>
+  <data name="ErrorFetchingDiagnoses" xml:space="preserve">
+    <value>An error occurred while fetching diagnoses</value>
+  </data>
+  <data name="ErrorFetchingDiagnosis" xml:space="preserve">
+    <value>An error occurred while fetching diagnosis</value>
+  </data>
+  <data name="ErrorFetchingSurgeries" xml:space="preserve">
+    <value>An error occurred while fetching surgeries</value>
+  </data>
+  <data name="ErrorFetchingSurgery" xml:space="preserve">
+    <value>An error occurred while fetching surgery</value>
   </data>
   
   <!-- Database -->

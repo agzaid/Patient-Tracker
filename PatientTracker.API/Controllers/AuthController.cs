@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using FluentValidation;
 
 namespace PatientTracker.API.Controllers;
@@ -13,17 +15,20 @@ public class AuthController : ControllerBase
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshTokenRequest> _refreshTokenValidator;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     public AuthController(
         IAuthService authService,
         IValidator<RegisterRequest> registerValidator,
         IValidator<LoginRequest> loginValidator,
-        IValidator<RefreshTokenRequest> refreshTokenValidator)
+        IValidator<RefreshTokenRequest> refreshTokenValidator,
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _authService = authService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _refreshTokenValidator = refreshTokenValidator;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -51,7 +56,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred during registration" });
+            return StatusCode(500, new { error = _localizer["ErrorDuringRegistration"] });
         }
     }
 
@@ -80,7 +85,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred during login" });
+            return StatusCode(500, new { error = _localizer["ErrorDuringLogin"] });
         }
     }
 
@@ -109,7 +114,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred during token refresh" });
+            return StatusCode(500, new { error = _localizer["ErrorDuringTokenRefresh"] });
         }
     }
 
@@ -124,11 +129,11 @@ public class AuthController : ControllerBase
         try
         {
             await _authService.LogoutAsync(request.RefreshToken);
-            return Ok(new { message = "Logged out successfully" });
+            return Ok(new { message = _localizer["LoggedOutSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred during logout" });
+            return StatusCode(500, new { error = _localizer["ErrorDuringLogout"] });
         }
     }
 }

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class SharedLinksController : ControllerBase
 {
     private readonly ISharedLinkService _sharedLinkService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public SharedLinksController(ISharedLinkService sharedLinkService)
+    public SharedLinksController(ISharedLinkService sharedLinkService, IStringLocalizer<ErrorMessages> localizer)
     {
         _sharedLinkService = sharedLinkService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class SharedLinksController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching shared links" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingSharedLinks"] });
         }
     }
 
@@ -57,7 +61,7 @@ public class SharedLinksController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating shared link" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingSharedLink"] });
         }
     }
 
@@ -76,14 +80,14 @@ public class SharedLinksController : ControllerBase
             
             if (!result)
             {
-                return NotFound(new { error = "Shared link not found" });
+                return NotFound(new { error = _localizer["SharedLinkNotFound"] });
             }
 
-            return Ok(new { message = "Shared link deleted successfully" });
+            return Ok(new { message = _localizer["SharedLinkDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting shared link" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingSharedLink"] });
         }
     }
 
@@ -102,14 +106,14 @@ public class SharedLinksController : ControllerBase
             
             if (!result)
             {
-                return NotFound(new { error = "Shared link not found" });
+                return NotFound(new { error = _localizer["SharedLinkNotFound"] });
             }
 
-            return Ok(new { message = "Shared link status updated successfully" });
+            return Ok(new { message = _localizer["SharedLinkStatusUpdatedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while toggling shared link" });
+            return StatusCode(500, new { error = _localizer["ErrorTogglingSharedLink"] });
         }
     }
 

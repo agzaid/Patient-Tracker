@@ -8,11 +8,13 @@ public class DiagnosisService : IDiagnosisService
 {
     private readonly IDiagnosisRepository _diagnosisRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DiagnosisService(IDiagnosisRepository diagnosisRepository, IUserRepository userRepository)
+    public DiagnosisService(IDiagnosisRepository diagnosisRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _diagnosisRepository = diagnosisRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<DiagnosisDto>> GetDiagnosesAsync(int userId)
@@ -75,19 +77,20 @@ public class DiagnosisService : IDiagnosisService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdDiagnosis = await _diagnosisRepository.CreateAsync(diagnosis);
+        _diagnosisRepository.Add(diagnosis);
+        await _unitOfWork.CompleteAsync();
 
         return new DiagnosisDto
         {
-            Id = createdDiagnosis.Id,
-            DiagnosisName = createdDiagnosis.DiagnosisName,
-            DateDiagnosed = createdDiagnosis.DateDiagnosed,
-            DoctorName = createdDiagnosis.DoctorName,
-            Severity = createdDiagnosis.Severity,
-            Status = createdDiagnosis.Status,
-            Notes = createdDiagnosis.Notes,
-            CreatedAt = createdDiagnosis.CreatedAt,
-            UpdatedAt = createdDiagnosis.UpdatedAt
+            Id = diagnosis.Id,
+            DiagnosisName = diagnosis.DiagnosisName,
+            DateDiagnosed = diagnosis.DateDiagnosed,
+            DoctorName = diagnosis.DoctorName,
+            Severity = diagnosis.Severity,
+            Status = diagnosis.Status,
+            Notes = diagnosis.Notes,
+            CreatedAt = diagnosis.CreatedAt,
+            UpdatedAt = diagnosis.UpdatedAt
         };
     }
 
@@ -107,19 +110,20 @@ public class DiagnosisService : IDiagnosisService
         diagnosis.Notes = request.Notes;
         diagnosis.UpdatedAt = DateTime.UtcNow;
 
-        var updatedDiagnosis = await _diagnosisRepository.UpdateAsync(diagnosis);
+        _diagnosisRepository.Update(diagnosis);
+        await _unitOfWork.CompleteAsync();
 
         return new DiagnosisDto
         {
-            Id = updatedDiagnosis.Id,
-            DiagnosisName = updatedDiagnosis.DiagnosisName,
-            DateDiagnosed = updatedDiagnosis.DateDiagnosed,
-            DoctorName = updatedDiagnosis.DoctorName,
-            Severity = updatedDiagnosis.Severity,
-            Status = updatedDiagnosis.Status,
-            Notes = updatedDiagnosis.Notes,
-            CreatedAt = updatedDiagnosis.CreatedAt,
-            UpdatedAt = updatedDiagnosis.UpdatedAt
+            Id = diagnosis.Id,
+            DiagnosisName = diagnosis.DiagnosisName,
+            DateDiagnosed = diagnosis.DateDiagnosed,
+            DoctorName = diagnosis.DoctorName,
+            Severity = diagnosis.Severity,
+            Status = diagnosis.Status,
+            Notes = diagnosis.Notes,
+            CreatedAt = diagnosis.CreatedAt,
+            UpdatedAt = diagnosis.UpdatedAt
         };
     }
 
@@ -131,6 +135,8 @@ public class DiagnosisService : IDiagnosisService
             return false;
         }
 
-        return await _diagnosisRepository.DeleteAsync(id);
+        _diagnosisRepository.Delete(diagnosis);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 }

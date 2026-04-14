@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Authentication & Authorization -->
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>البريد الإلكتروني أو كلمة المرور غير صحيحة</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود</value>
+  </data>
+  <data name="UserAlreadyExists" xml:space="preserve">
+    <value>يوجد مستخدم بهذا البريد الإلكتروني بالفعل</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>رمز المصادقة غير صالح</value>
+  </data>
+  <data name="TokenExpired" xml:space="preserve">
+    <value>انتهت صلاحية رمز المصادقة</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>تم رفض الوصول. ليس لديك إذن لتنفيذ هذا الإجراء</value>
+  </data>
+  <data name="ErrorDuringRegistration" xml:space="preserve">
+    <value>حدث خطأ أثناء التسجيل</value>
+  </data>
+  <data name="ErrorDuringLogin" xml:space="preserve">
+    <value>حدث خطأ أثناء تسجيل الدخول</value>
+  </data>
+  <data name="ErrorDuringTokenRefresh" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الرمز</value>
+  </data>
+  <data name="ErrorDuringLogout" xml:space="preserve">
+    <value>حدث خطأ أثناء تسجيل الخروج</value>
+  </data>
+  <data name="LoggedOutSuccessfully" xml:space="preserve">
+    <value>تم تسجيل الخروج بنجاح</value>
+  </data>
+  
+  <!-- Validation -->
+  <data name="ValidationError" xml:space="preserve">
+    <value>حدث خطأ في التحقق</value>
+  </data>
+  <data name="RequiredField" xml:space="preserve">
+    <value>حقل {0} مطلوب</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>عنوان البريد الإلكتروني غير صالح</value>
+  </data>
+  <data name="InvalidPassword" xml:space="preserve">
+    <value>يجب أن تكون كلمة المرور 8 أحرف على الأقل وتحتوي على أحرف كبيرة وصغيرة وأرقام</value>
+  </data>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>التاريخ المقدم غير صالح</value>
+  </data>
+  
+  <!-- Business Logic -->
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>المورد المطلوب غير موجود</value>
+  </data>
+  <data name="DuplicateResource" xml:space="preserve">
+    <value>مورد مكرر موجود بالفعل</value>
+  </data>
+  <data name="InvalidOperation" xml:space="preserve">
+    <value>العملية المطلوبة غير صالحة</value>
+  </data>
+  <data name="InsufficientPermissions" xml:space="preserve">
+    <value>ليس لديك أذونات كافية لتنفيذ هذا الإجراء</value>
+  </data>
+  
+  <!-- Profile -->
+  <data name="ProfileNotFound" xml:space="preserve">
+    <value>الملف الشخصي غير موجود</value>
+  </data>
+  <data name="ProfileAlreadyExists" xml:space="preserve">
+    <value>الملف الشخصي موجود بالفعل</value>
+  </data>
+  <data name="ErrorCreatingProfile" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الملف الشخصي</value>
+  </data>
+  <data name="ErrorUpdatingProfile" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الملف الشخصي</value>
+  </data>
+  <data name="ErrorDeletingProfile" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الملف الشخصي</value>
+  </data>
+  <data name="ProfileDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الملف الشخصي بنجاح</value>
+  </data>
+  
+  <!-- Medication -->
+  <data name="MedicationNotFound" xml:space="preserve">
+    <value>الدواء غير موجود</value>
+  </data>
+  <data name="ErrorCreatingMedication" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الدواء</value>
+  </data>
+  <data name="ErrorUpdatingMedication" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الدواء</value>
+  </data>
+  <data name="ErrorDeletingMedication" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الدواء</value>
+  </data>
+  <data name="MedicationDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الدواء بنجاح</value>
+  </data>
+  
+  <!-- Lab Test -->
+  <data name="LabTestNotFound" xml:space="preserve">
+    <value>الفحص المخبري غير موجود</value>
+  </data>
+  <data name="ErrorCreatingLabTest" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الفحص المخبري</value>
+  </data>
+  <data name="ErrorUpdatingLabTest" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الفحص المخبري</value>
+  </data>
+  <data name="ErrorDeletingLabTest" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الفحص المخبري</value>
+  </data>
+  <data name="LabTestDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الفحص المخبري بنجاح</value>
+  </data>
+  
+  <!-- Radiology -->
+  <data name="RadiologyNotFound" xml:space="preserve">
+    <value>الفحص الإشعاعي غير موجود</value>
+  </data>
+  <data name="ErrorCreatingRadiology" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الفحص الإشعاعي</value>
+  </data>
+  <data name="ErrorUpdatingRadiology" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الفحص الإشعاعي</value>
+  </data>
+  <data name="ErrorDeletingRadiology" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الفحص الإشعاعي</value>
+  </data>
+  <data name="RadiologyDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الفحص الإشعاعي بنجاح</value>
+  </data>
+  
+  <!-- Diagnosis -->
+  <data name="DiagnosisNotFound" xml:space="preserve">
+    <value>التشخيص غير موجود</value>
+  </data>
+  <data name="ErrorCreatingDiagnosis" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء التشخيص</value>
+  </data>
+  <data name="ErrorUpdatingDiagnosis" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث التشخيص</value>
+  </data>
+  <data name="ErrorDeletingDiagnosis" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف التشخيص</value>
+  </data>
+  <data name="DiagnosisDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف التشخيص بنجاح</value>
+  </data>
+  
+  <!-- Surgery -->
+  <data name="SurgeryNotFound" xml:space="preserve">
+    <value>الجراحة غير موجودة</value>
+  </data>
+  <data name="ErrorCreatingSurgery" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الجراحة</value>
+  </data>
+  <data name="ErrorUpdatingSurgery" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الجراحة</value>
+  </data>
+  <data name="ErrorDeletingSurgery" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الجراحة</value>
+  </data>
+  <data name="SurgeryDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الجراحة بنجاح</value>
+  </data>
+  
+  <!-- Shared Link -->
+  <data name="SharedLinkNotFound" xml:space="preserve">
+    <value>الرابط المشترك غير موجود</value>
+  </data>
+  <data name="ErrorCreatingSharedLink" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء الرابط المشترك</value>
+  </data>
+  <data name="ErrorDeletingSharedLink" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف الرابط المشترك</value>
+  </data>
+  <data name="SharedLinkDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الرابط المشترك بنجاح</value>
+  </data>
+  <data name="ErrorFetchingSharedLinks" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الروابط المشتركة</value>
+  </data>
+  <data name="ErrorTogglingSharedLink" xml:space="preserve">
+    <value>حدث خطأ أثناء تبديل حالة الرابط المشترك</value>
+  </data>
+  <data name="SharedLinkStatusUpdatedSuccessfully" xml:space="preserve">
+    <value>تم تحديث حالة الرابط المشترك بنجاح</value>
+  </data>
+  
+  <!-- Generic Fetching Errors -->
+  <data name="ErrorFetchingMedications" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الأدوية</value>
+  </data>
+  <data name="ErrorFetchingMedication" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الدواء</value>
+  </data>
+  <data name="ErrorFetchingLabTests" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الفحوصات المخبرية</value>
+  </data>
+  <data name="ErrorFetchingLabTest" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الفحص المخبري</value>
+  </data>
+  <data name="ErrorFetchingRadiologyScans" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الفحوصات الإشعاعية</value>
+  </data>
+  <data name="ErrorFetchingRadiologyScan" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الفحص الإشعاعي</value>
+  </data>
+  <data name="ErrorFetchingDiagnoses" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب التشخيصات</value>
+  </data>
+  <data name="ErrorFetchingDiagnosis" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب التشخيص</value>
+  </data>
+  <data name="ErrorFetchingSurgeries" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب العمليات الجراحية</value>
+  </data>
+  <data name="ErrorFetchingSurgery" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الجراحة</value>
+  </data>
+  
+  <!-- Database -->
+  <data name="DatabaseError" xml:space="preserve">
+    <value>حدث خطأ في قاعدة البيانات أثناء معالجة طلبك</value>
+  </data>
+  <data name="DatabaseConnectionError" xml:space="preserve">
+    <value>غير قادر على الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى لاحقاً</value>
+  </data>
+  <data name="DatabaseTimeout" xml:space="preserve">
+    <value>انتهت مهلة عملية قاعدة البيانات. يرجى المحاولة مرة أخرى</value>
+  </data>
+  <data name="ConstraintViolation" xml:space="preserve">
+    <value>العملية تنتهك قيود قاعدة البيانات</value>
+  </data>
+  
+  <!-- System -->
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى</value>
+  </data>
+  <data name="ServiceUnavailable" xml:space="preserve">
+    <value>الخدمة غير متاحة مؤقتاً. يرجى المحاولة مرة أخرى لاحقاً</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>الملف المطلوب غير موجود</value>
+  </data>
+  <data name="ConfigurationError" xml:space="preserve">
+    <value>حدث خطأ في التكوين</value>
+  </data>
+</root>

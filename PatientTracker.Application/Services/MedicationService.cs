@@ -8,11 +8,13 @@ public class MedicationService : IMedicationService
 {
     private readonly IMedicationRepository _medicationRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public MedicationService(IMedicationRepository medicationRepository, IUserRepository userRepository)
+    public MedicationService(IMedicationRepository medicationRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _medicationRepository = medicationRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<MedicationDto>> GetMedicationsAsync(int userId)
@@ -82,21 +84,22 @@ public class MedicationService : IMedicationService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdMedication = await _medicationRepository.CreateAsync(medication);
+        _medicationRepository.Add(medication);
+        await _unitOfWork.CompleteAsync();
 
         return new MedicationDto
         {
-            Id = createdMedication.Id,
-            Name = createdMedication.Name,
-            Dosage = createdMedication.Dosage,
-            Frequency = createdMedication.Frequency,
-            StartDate = createdMedication.StartDate,
-            EndDate = createdMedication.EndDate,
-            IsCurrent = createdMedication.IsCurrent,
-            Notes = createdMedication.Notes,
-            PrescriptionUrl = createdMedication.PrescriptionUrl,
-            CreatedAt = createdMedication.CreatedAt,
-            UpdatedAt = createdMedication.UpdatedAt
+            Id = medication.Id,
+            Name = medication.Name,
+            Dosage = medication.Dosage,
+            Frequency = medication.Frequency,
+            StartDate = medication.StartDate,
+            EndDate = medication.EndDate,
+            IsCurrent = medication.IsCurrent,
+            Notes = medication.Notes,
+            PrescriptionUrl = medication.PrescriptionUrl,
+            CreatedAt = medication.CreatedAt,
+            UpdatedAt = medication.UpdatedAt
         };
     }
 
@@ -118,21 +121,22 @@ public class MedicationService : IMedicationService
         medication.PrescriptionUrl = request.PrescriptionUrl;
         medication.UpdatedAt = DateTime.UtcNow;
 
-        var updatedMedication = await _medicationRepository.UpdateAsync(medication);
+        _medicationRepository.Update(medication);
+        await _unitOfWork.CompleteAsync();
 
         return new MedicationDto
         {
-            Id = updatedMedication.Id,
-            Name = updatedMedication.Name,
-            Dosage = updatedMedication.Dosage,
-            Frequency = updatedMedication.Frequency,
-            StartDate = updatedMedication.StartDate,
-            EndDate = updatedMedication.EndDate,
-            IsCurrent = updatedMedication.IsCurrent,
-            Notes = updatedMedication.Notes,
-            PrescriptionUrl = updatedMedication.PrescriptionUrl,
-            CreatedAt = updatedMedication.CreatedAt,
-            UpdatedAt = updatedMedication.UpdatedAt
+            Id = medication.Id,
+            Name = medication.Name,
+            Dosage = medication.Dosage,
+            Frequency = medication.Frequency,
+            StartDate = medication.StartDate,
+            EndDate = medication.EndDate,
+            IsCurrent = medication.IsCurrent,
+            Notes = medication.Notes,
+            PrescriptionUrl = medication.PrescriptionUrl,
+            CreatedAt = medication.CreatedAt,
+            UpdatedAt = medication.UpdatedAt
         };
     }
 
@@ -144,6 +148,8 @@ public class MedicationService : IMedicationService
             return false;
         }
 
-        return await _medicationRepository.DeleteAsync(id);
+        _medicationRepository.Delete(medication);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 }

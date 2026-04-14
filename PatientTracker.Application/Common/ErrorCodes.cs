@@ -23,6 +23,28 @@ public enum ErrorCodes
     InvalidOperation = 3003,
     InsufficientPermissions = 3004,
     
+    // Profile
+    ProfileNotFound = 3101,
+    ProfileAlreadyExists = 3102,
+    
+    // Medication
+    MedicationNotFound = 3201,
+    
+    // Lab Test
+    LabTestNotFound = 3301,
+    
+    // Radiology
+    RadiologyNotFound = 3401,
+    
+    // Diagnosis
+    DiagnosisNotFound = 3501,
+    
+    // Surgery
+    SurgeryNotFound = 3601,
+    
+    // Shared Link
+    SharedLinkNotFound = 3701,
+    
     // Database
     DatabaseError = 4001,
     DatabaseConnectionError = 4002,

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class LabTestsController : ControllerBase
 {
     private readonly ILabTestService _labTestService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public LabTestsController(ILabTestService labTestService)
+    public LabTestsController(ILabTestService labTestService, IStringLocalizer<ErrorMessages> localizer)
     {
         _labTestService = labTestService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class LabTestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching lab tests" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTests"] });
         }
     }
 
@@ -52,14 +56,14 @@ public class LabTestsController : ControllerBase
             
             if (labTest == null)
             {
-                return NotFound(new { error = "Lab test not found" });
+                return NotFound(new { error = _localizer["LabTestNotFound"] });
             }
 
             return Ok(labTest);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching lab test" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTest"] });
         }
     }
 
@@ -83,7 +87,7 @@ public class LabTestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating lab test" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingLabTest"] });
         }
     }
 
@@ -108,7 +112,7 @@ public class LabTestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating lab test" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingLabTest"] });
         }
     }
 
@@ -130,11 +134,11 @@ public class LabTestsController : ControllerBase
                 return NotFound(new { error = "Lab test not found" });
             }
 
-            return Ok(new { message = "Lab test deleted successfully" });
+            return Ok(new { message = _localizer["LabTestDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting lab test" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingLabTest"] });
         }
     }
 

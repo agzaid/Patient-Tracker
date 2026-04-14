@@ -8,11 +8,13 @@ public class LabTestService : ILabTestService
 {
     private readonly ILabTestRepository _labTestRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LabTestService(ILabTestRepository labTestRepository, IUserRepository userRepository)
+    public LabTestService(ILabTestRepository labTestRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _labTestRepository = labTestRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<LabTestDto>> GetLabTestsAsync(int userId)
@@ -81,21 +83,22 @@ public class LabTestService : ILabTestService
             UpdatedAt = DateTime.UtcNow
         };
 
-        var createdLabTest = await _labTestRepository.CreateAsync(labTest);
+        _labTestRepository.Add(labTest);
+        await _unitOfWork.CompleteAsync();
 
         return new LabTestDto
         {
-            Id = createdLabTest.Id,
-            TestName = createdLabTest.TestName,
-            TestDate = createdLabTest.TestDate,
-            ResultValue = createdLabTest.ResultValue,
-            ResultUnit = createdLabTest.ResultUnit,
-            NormalRange = createdLabTest.NormalRange,
-            Status = createdLabTest.Status,
-            Notes = createdLabTest.Notes,
-            ReportUrl = createdLabTest.ReportUrl,
-            CreatedAt = createdLabTest.CreatedAt,
-            UpdatedAt = createdLabTest.UpdatedAt
+            Id = labTest.Id,
+            TestName = labTest.TestName,
+            TestDate = labTest.TestDate,
+            ResultValue = labTest.ResultValue,
+            ResultUnit = labTest.ResultUnit,
+            NormalRange = labTest.NormalRange,
+            Status = labTest.Status,
+            Notes = labTest.Notes,
+            ReportUrl = labTest.ReportUrl,
+            CreatedAt = labTest.CreatedAt,
+            UpdatedAt = labTest.UpdatedAt
         };
     }
 
@@ -117,21 +120,22 @@ public class LabTestService : ILabTestService
         labTest.ReportUrl = request.ReportUrl;
         labTest.UpdatedAt = DateTime.UtcNow;
 
-        var updatedLabTest = await _labTestRepository.UpdateAsync(labTest);
+        _labTestRepository.Update(labTest);
+        await _unitOfWork.CompleteAsync();
 
         return new LabTestDto
         {
-            Id = updatedLabTest.Id,
-            TestName = updatedLabTest.TestName,
-            TestDate = updatedLabTest.TestDate,
-            ResultValue = updatedLabTest.ResultValue,
-            ResultUnit = updatedLabTest.ResultUnit,
-            NormalRange = updatedLabTest.NormalRange,
-            Status = updatedLabTest.Status,
-            Notes = updatedLabTest.Notes,
-            ReportUrl = updatedLabTest.ReportUrl,
-            CreatedAt = updatedLabTest.CreatedAt,
-            UpdatedAt = updatedLabTest.UpdatedAt
+            Id = labTest.Id,
+            TestName = labTest.TestName,
+            TestDate = labTest.TestDate,
+            ResultValue = labTest.ResultValue,
+            ResultUnit = labTest.ResultUnit,
+            NormalRange = labTest.NormalRange,
+            Status = labTest.Status,
+            Notes = labTest.Notes,
+            ReportUrl = labTest.ReportUrl,
+            CreatedAt = labTest.CreatedAt,
+            UpdatedAt = labTest.UpdatedAt
         };
     }
 
@@ -143,6 +147,8 @@ public class LabTestService : ILabTestService
             return false;
         }
 
-        return await _labTestRepository.DeleteAsync(id);
+        _labTestRepository.Delete(labTest);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 }

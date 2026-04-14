@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class ProfileController : ControllerBase
 {
     private readonly IProfileService _profileService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public ProfileController(IProfileService profileService)
+    public ProfileController(IProfileService profileService, IStringLocalizer<ErrorMessages> localizer)
     {
         _profileService = profileService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -30,7 +34,7 @@ public class ProfileController : ControllerBase
         
         if (profile == null)
         {
-            return NotFound(new { error = "Profile not found" });
+            return NotFound(new { error = _localizer["ProfileNotFound"] });
         }
 
         return Ok(profile);
@@ -56,7 +60,7 @@ public class ProfileController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating profile" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingProfile"] });
         }
     }
 
@@ -80,7 +84,7 @@ public class ProfileController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating profile" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingProfile"] });
         }
     }
 
@@ -98,14 +102,14 @@ public class ProfileController : ControllerBase
             
             if (!result)
             {
-                return NotFound(new { error = "Profile not found" });
+                return NotFound(new { error = _localizer["ProfileNotFound"] });
             }
 
-            return Ok(new { message = "Profile deleted successfully" });
+            return Ok(new { message = _localizer["ProfileDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting profile" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingProfile"] });
         }
     }
 

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
+using PatientTracker.Application.Resources;
 using System.Security.Claims;
 
 namespace PatientTracker.API.Controllers;
@@ -12,10 +14,12 @@ namespace PatientTracker.API.Controllers;
 public class DiagnosesController : ControllerBase
 {
     private readonly IDiagnosisService _diagnosisService;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public DiagnosesController(IDiagnosisService diagnosisService)
+    public DiagnosesController(IDiagnosisService diagnosisService, IStringLocalizer<ErrorMessages> localizer)
     {
         _diagnosisService = diagnosisService;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -33,7 +37,7 @@ public class DiagnosesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching diagnoses" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnoses"] });
         }
     }
 
@@ -52,14 +56,14 @@ public class DiagnosesController : ControllerBase
             
             if (diagnosis == null)
             {
-                return NotFound(new { error = "Diagnosis not found" });
+                return NotFound(new { error = _localizer["DiagnosisNotFound"] });
             }
 
             return Ok(diagnosis);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching diagnosis" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnosis"] });
         }
     }
 
@@ -83,7 +87,7 @@ public class DiagnosesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while creating diagnosis" });
+            return StatusCode(500, new { error = _localizer["ErrorCreatingDiagnosis"] });
         }
     }
 
@@ -108,7 +112,7 @@ public class DiagnosesController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating diagnosis" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingDiagnosis"] });
         }
     }
 
@@ -130,11 +134,11 @@ public class DiagnosesController : ControllerBase
                 return NotFound(new { error = "Diagnosis not found" });
             }
 
-            return Ok(new { message = "Diagnosis deleted successfully" });
+            return Ok(new { message = _localizer["DiagnosisDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting diagnosis" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingDiagnosis"] });
         }
     }
 

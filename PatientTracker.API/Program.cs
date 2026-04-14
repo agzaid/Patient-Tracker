@@ -25,9 +25,20 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>()
 
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// Configure supported cultures
+var supportedCultures = new[] { "en-US", "ar-SA" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
 builder.Services.AddMvc()
     .AddDataAnnotationsLocalization()
     .AddViewLocalization();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -118,6 +129,9 @@ builder.Services.AddScoped<ISharedLinkService, SharedLinkService>();
 builder.Services.AddScoped<ITimelineService, TimelineService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+// Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
@@ -142,6 +156,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Configure localization
+app.UseRequestLocalization(localizationOptions);
 
 // Custom middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();

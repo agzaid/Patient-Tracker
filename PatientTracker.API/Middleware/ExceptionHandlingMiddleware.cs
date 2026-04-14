@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using PatientTracker.Application.Common;
-using PatientTracker.API.Resources;
+using PatientTracker.Application.Resources;
 using Serilog;
 
 namespace PatientTracker.API.Middleware;
