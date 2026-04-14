@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  patienttracker-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+      - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql;Database=PatientTracker;Uid=root;Pwd=password123;
+      - Jwt__Key=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - Jwt__Issuer=PatientTracker.API
+      - Jwt__Audience=PatientTracker.Client
+      - Jwt__AccessTokenExpiration=15
+      - Jwt__RefreshTokenExpiration=7
+    depends_on:
+      - mysql
+    networks:
+      - patienttracker-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: patienttracker-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+      MYSQL_DATABASE: PatientTracker
+      MYSQL_USER: patientuser
+      MYSQL_PASSWORD: patientpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - patienttracker-network
+
+  adminer:
+    image: adminer
+    container_name: patienttracker-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - patienttracker-network
+
+volumes:
+  mysql_data:
+
+networks:
+  patienttracker-network:
+    driver: bridge

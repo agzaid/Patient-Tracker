@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="PatientTracker.API/PatientTracker.API.csproj" />
+  <Project Path="PatientTracker.Application/PatientTracker.Application.csproj" />
+  <Project Path="PatientTracker.Domain/PatientTracker.Domain.csproj" />
+  <Project Path="PatientTracker.Infrastructure/PatientTracker.Infrastructure.csproj" />
+</Solution>
