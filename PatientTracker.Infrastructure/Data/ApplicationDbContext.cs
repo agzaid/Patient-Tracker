@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Surgery> Surgeries { get; set; }
     public DbSet<SharedLink> SharedLinks { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Document> Documents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +120,21 @@ public class ApplicationDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
             entity.Property(e => e.Token).IsRequired().HasMaxLength(255);
             entity.HasIndex(e => e.Token).IsUnique();
+        });
+
+        // Document configuration
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ThumbnailPath).HasMaxLength(500);
         });
 
         // Seed data

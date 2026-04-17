@@ -38,6 +38,8 @@ public class CreateMedicationRequest
 
     [MaxLength(500)]
     public string? PrescriptionUrl { get; set; }
+
+    public List<int>? DocumentIds { get; set; }
 }
 
 public class UpdateMedicationRequest

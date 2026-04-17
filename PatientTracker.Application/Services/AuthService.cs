@@ -83,7 +83,7 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            throw new BusinessException(ErrorCodes.InvalidCredentials);
+            throw new BusinessException(ErrorCodes.InvalidCredentials, "Invalid email or password");
         }
 
         // Generate tokens

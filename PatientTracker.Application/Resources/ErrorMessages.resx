@@ -69,6 +69,9 @@
   <data name="UserAlreadyExists" xml:space="preserve">
     <value>A user with this email already exists</value>
   </data>
+  <data name="InvalidUserIdentifier" xml:space="preserve">
+    <value>Invalid user identifier</value>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid authentication token</value>
   </data>
@@ -143,6 +146,65 @@
   </data>
   <data name="ProfileDeletedSuccessfully" xml:space="preserve">
     <value>Profile deleted successfully</value>
+  </data>
+  <data name="LanguagePreferenceUpdated" xml:space="preserve">
+    <value>Language preference updated successfully</value>
+  </data>
+  <data name="ErrorUpdatingLanguagePreference" xml:space="preserve">
+    <value>An error occurred while updating language preference</value>
+  </data>
+  <data name="UnsupportedLanguage" xml:space="preserve">
+    <value>Unsupported language preference</value>
+  </data>
+  
+  <!-- Documents -->
+  <data name="DocumentNotFound" xml:space="preserve">
+    <value>Document not found</value>
+  </data>
+  <data name="NoFileUploaded" xml:space="preserve">
+    <value>No file uploaded</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>File size exceeds the maximum allowed limit</value>
+  </data>
+  <data name="UnsupportedFileType" xml:space="preserve">
+    <value>Unsupported file type</value>
+  </data>
+  <data name="InvalidImageFile" xml:space="preserve">
+    <value>Invalid image file</value>
+  </data>
+  <data name="InvalidDocumentFile" xml:space="preserve">
+    <value>Invalid document file</value>
+  </data>
+  <data name="ErrorUploadingDocument" xml:space="preserve">
+    <value>An error occurred while uploading the document</value>
+  </data>
+  <data name="ErrorFetchingDocuments" xml:space="preserve">
+    <value>An error occurred while fetching documents</value>
+  </data>
+  <data name="ErrorFetchingDocument" xml:space="preserve">
+    <value>An error occurred while fetching the document</value>
+  </data>
+  <data name="ErrorDownloadingDocument" xml:space="preserve">
+    <value>An error occurred while downloading the document</value>
+  </data>
+  <data name="ErrorDeletingDocument" xml:space="preserve">
+    <value>An error occurred while deleting the document</value>
+  </data>
+  <data name="DocumentDeletedSuccessfully" xml:space="preserve">
+    <value>Document deleted successfully</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>File not found</value>
+  </data>
+  <data name="InvalidFilePath" xml:space="preserve">
+    <value>Invalid file path</value>
+  </data>
+  <data name="ThumbnailNotFound" xml:space="preserve">
+    <value>Thumbnail not found</value>
+  </data>
+  <data name="ErrorFetchingThumbnail" xml:space="preserve">
+    <value>An error occurred while fetching the thumbnail</value>
   </data>
   
   <!-- Medication -->

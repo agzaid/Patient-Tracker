@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 
 namespace PatientTracker.Application.Services;
 
@@ -9,12 +12,16 @@ public class MedicationService : IMedicationService
     private readonly IMedicationRepository _medicationRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public MedicationService(IMedicationRepository medicationRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public MedicationService(IMedicationRepository medicationRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IDocumentRepository documentRepository, IStringLocalizer<ErrorMessages> localizer)
     {
         _medicationRepository = medicationRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _documentRepository = documentRepository;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<MedicationDto>> GetMedicationsAsync(int userId)
@@ -66,7 +73,7 @@ public class MedicationService : IMedicationService
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            throw new InvalidOperationException(_localizer["UserNotFound"]);
         }
 
         var medication = new Medication
@@ -86,6 +93,23 @@ public class MedicationService : IMedicationService
 
         _medicationRepository.Add(medication);
         await _unitOfWork.CompleteAsync();
+
+        // If there are any temporary documents for this user with ParentEntityType = Medication and ParentEntityId = null,
+        // update them to link to this medication
+        if (request.DocumentIds != null && request.DocumentIds.Any())
+        {
+            var documents = await _documentRepository.GetByIdsAsync(request.DocumentIds);
+            foreach (var document in documents)
+            {
+                if (document.UserId == userId && document.ParentEntityType == ParentEntityType.Medication && document.ParentEntityId == null)
+                {
+                    document.ParentEntityId = medication.Id;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    _documentRepository.Update(document);
+                }
+            }
+            await _unitOfWork.CompleteAsync();
+        }
 
         return new MedicationDto
         {
@@ -108,7 +132,7 @@ public class MedicationService : IMedicationService
         var medication = await _medicationRepository.GetByIdAsync(id);
         if (medication == null || medication.UserId != userId)
         {
-            throw new InvalidOperationException("Medication not found or access denied");
+            throw new InvalidOperationException(_localizer["MedicationNotFound"]);
         }
 
         medication.Name = request.Name;

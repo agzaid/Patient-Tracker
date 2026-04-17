@@ -69,6 +69,9 @@
   <data name="UserAlreadyExists" xml:space="preserve">
     <value>يوجد مستخدم بهذا البريد الإلكتروني بالفعل</value>
   </data>
+  <data name="InvalidUserIdentifier" xml:space="preserve">
+    <value>معرف المستخدم غير صالح</value>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>رمز المصادقة غير صالح</value>
   </data>
@@ -143,6 +146,65 @@
   </data>
   <data name="ProfileDeletedSuccessfully" xml:space="preserve">
     <value>تم حذف الملف الشخصي بنجاح</value>
+  </data>
+  <data name="LanguagePreferenceUpdated" xml:space="preserve">
+    <value>تم تحديث تفضيل اللغة بنجاح</value>
+  </data>
+  <data name="ErrorUpdatingLanguagePreference" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث تفضيل اللغة</value>
+  </data>
+  <data name="UnsupportedLanguage" xml:space="preserve">
+    <value>تفضيل اللغة غير مدعوم</value>
+  </data>
+  
+  <!-- Documents -->
+  <data name="DocumentNotFound" xml:space="preserve">
+    <value>المستند غير موجود</value>
+  </data>
+  <data name="NoFileUploaded" xml:space="preserve">
+    <value>لم يتم رفع أي ملف</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>حجم الملف يتجاوز الحد الأقصى المسموح به</value>
+  </data>
+  <data name="UnsupportedFileType" xml:space="preserve">
+    <value>نوع الملف غير مدعوم</value>
+  </data>
+  <data name="InvalidImageFile" xml:space="preserve">
+    <value>ملف صورة غير صالح</value>
+  </data>
+  <data name="InvalidDocumentFile" xml:space="preserve">
+    <value>ملف مستند غير صالح</value>
+  </data>
+  <data name="ErrorUploadingDocument" xml:space="preserve">
+    <value>حدث خطأ أثناء رفع المستند</value>
+  </data>
+  <data name="ErrorFetchingDocuments" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب المستندات</value>
+  </data>
+  <data name="ErrorFetchingDocument" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب المستند</value>
+  </data>
+  <data name="ErrorDownloadingDocument" xml:space="preserve">
+    <value>حدث خطأ أثناء تنزيل المستند</value>
+  </data>
+  <data name="ErrorDeletingDocument" xml:space="preserve">
+    <value>حدث خطأ أثناء حذف المستند</value>
+  </data>
+  <data name="DocumentDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف المستند بنجاح</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>الملف غير موجود</value>
+  </data>
+  <data name="InvalidFilePath" xml:space="preserve">
+    <value>مسار الملف غير صالح</value>
+  </data>
+  <data name="ThumbnailNotFound" xml:space="preserve">
+    <value>الصورة المصغرة غير موجودة</value>
+  </data>
+  <data name="ErrorFetchingThumbnail" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب الصورة المصغرة</value>
   </data>
   
   <!-- Medication -->

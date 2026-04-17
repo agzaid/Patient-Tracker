@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Services;
 using PatientTracker.Application.Resources;
@@ -16,19 +17,22 @@ public class AuthController : ControllerBase
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshTokenRequest> _refreshTokenValidator;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IAuthService authService,
         IValidator<RegisterRequest> registerValidator,
         IValidator<LoginRequest> loginValidator,
         IValidator<RefreshTokenRequest> refreshTokenValidator,
-        IStringLocalizer<ErrorMessages> localizer)
+        IStringLocalizer<ErrorMessages> localizer,
+        ILogger<AuthController> logger)
     {
         _authService = authService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _refreshTokenValidator = refreshTokenValidator;
         _localizer = localizer;
+        _logger = logger;
     }
 
     /// <summary>
@@ -56,6 +60,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error during registration");
             return StatusCode(500, new { error = _localizer["ErrorDuringRegistration"] });
         }
     }
@@ -83,8 +88,13 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+        catch (PatientTracker.Application.Common.BusinessException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error during login");
             return StatusCode(500, new { error = _localizer["ErrorDuringLogin"] });
         }
     }
@@ -114,6 +124,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error during token refresh");
             return StatusCode(500, new { error = _localizer["ErrorDuringTokenRefresh"] });
         }
     }
@@ -133,6 +144,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error during logout");
             return StatusCode(500, new { error = _localizer["ErrorDuringLogout"] });
         }
     }

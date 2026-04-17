@@ -131,7 +131,7 @@ public class MedicationsController : ControllerBase
             
             if (!result)
             {
-                return NotFound(new { error = "Medication not found" });
+                return NotFound(new { error = _localizer["MedicationNotFound"] });
             }
 
             return Ok(new { message = _localizer["MedicationDeletedSuccessfully"] });
@@ -147,7 +147,7 @@ public class MedicationsController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
-            throw new UnauthorizedAccessException("Invalid user identifier");
+            throw new UnauthorizedAccessException(_localizer["InvalidUserIdentifier"]);
         }
         return userId;
     }

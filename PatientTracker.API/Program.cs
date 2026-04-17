@@ -1,14 +1,20 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PatientTracker.API.Middleware;
 using PatientTracker.Infrastructure.Data;
-using PatientTracker.Infrastructure.Repositories;
+using System.Globalization;
+using System.Reflection;
 using PatientTracker.Infrastructure.Services;
+using PatientTracker.Infrastructure.Repositories;
 using PatientTracker.Application.Services;
 using PatientTracker.Application.Validators;
 using PatientTracker.Application.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using System.Reflection;
 using Serilog;
 using PatientTracker.API.Middleware;
 
@@ -37,6 +43,12 @@ builder.Services.AddMvc()
     .AddDataAnnotationsLocalization()
     .AddViewLocalization();
 
+// Configure file upload limits
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = builder.Configuration.GetValue<long>("Uploads:MaxFileSize", 52428800); // 50MB
+});
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -50,7 +62,7 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "A comprehensive patient health records management API"
     });
-    
+
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -76,10 +88,13 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Include XML Comments
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    // Handle enums as strings
+    c.UseInlineDefinitionsForEnums();
+
+    // Include XML Comments - temporarily disabled
+    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    //c.IncludeXmlComments(xmlPath);
 });
 
 // Database
@@ -128,6 +143,8 @@ builder.Services.AddScoped<ISurgeryService, SurgeryService>();
 builder.Services.AddScoped<ISharedLinkService, SharedLinkService>();
 builder.Services.AddScoped<ITimelineService, TimelineService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 
 // Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -141,12 +158,14 @@ builder.Services.AddScoped<IRadiologyRepository, RadiologyRepository>();
 builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
 builder.Services.AddScoped<ISurgeryRepository, SurgeryRepository>();
 builder.Services.AddScoped<ISharedLinkRepository, SharedLinkRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {

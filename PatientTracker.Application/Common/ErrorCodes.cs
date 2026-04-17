@@ -45,6 +45,9 @@ public enum ErrorCodes
     // Shared Link
     SharedLinkNotFound = 3701,
     
+    // Document
+    DocumentNotFound = 3801,
+    
     // Database
     DatabaseError = 4001,
     DatabaseConnectionError = 4002,
