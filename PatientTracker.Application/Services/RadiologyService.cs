@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 
 namespace PatientTracker.Application.Services;
 
@@ -9,12 +12,16 @@ public class RadiologyService : IRadiologyService
     private readonly IRadiologyRepository _radiologyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public RadiologyService(IRadiologyRepository radiologyRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public RadiologyService(IRadiologyRepository radiologyRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IDocumentRepository documentRepository, IStringLocalizer<ErrorMessages> localizer)
     {
         _radiologyRepository = radiologyRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _documentRepository = documentRepository;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<RadiologyScanDto>> GetRadiologyScansAsync(int userId)
@@ -60,9 +67,12 @@ public class RadiologyService : IRadiologyService
 
     public async Task<RadiologyScanDto> CreateRadiologyScanAsync(int userId, CreateRadiologyScanRequest request)
     {
+        // Verify user exists
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new InvalidOperationException("User not found");
+        {
+            throw new InvalidOperationException(_localizer["UserNotFound"]);
+        }
 
         var radiology = new RadiologyScan
         {
@@ -81,6 +91,23 @@ public class RadiologyService : IRadiologyService
 
         _radiologyRepository.Add(radiology);
         await _unitOfWork.CompleteAsync();
+
+        // If there are any temporary documents for this user with ParentEntityType = RadiologyScan and ParentEntityId = null,
+        // update them to link to this radiology scan
+        if (request.DocumentIds != null && request.DocumentIds.Any())
+        {
+            var documents = await _documentRepository.GetByIdsAsync(request.DocumentIds);
+            foreach (var document in documents)
+            {
+                if (document.UserId == userId && document.ParentEntityType == ParentEntityType.RadiologyScan && document.ParentEntityId == null)
+                {
+                    document.ParentEntityId = radiology.Id;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    _documentRepository.Update(document);
+                }
+            }
+            await _unitOfWork.CompleteAsync();
+        }
 
         return new RadiologyScanDto
         {
@@ -102,7 +129,9 @@ public class RadiologyService : IRadiologyService
     {
         var scan = await _radiologyRepository.GetByIdAsync(id);
         if (scan == null || scan.UserId != userId)
-            throw new InvalidOperationException("Radiology scan not found or access denied");
+        {
+            throw new InvalidOperationException(_localizer["RadiologyScanNotFound"]);
+        }
 
         scan.ScanType = request.ScanType;
         scan.BodyPart = request.BodyPart;

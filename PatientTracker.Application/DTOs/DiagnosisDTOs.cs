@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace PatientTracker.Application.DTOs;
 
@@ -34,6 +35,8 @@ public class CreateDiagnosisRequest
 
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    
+    public List<int>? DocumentIds { get; set; }
 }
 
 public class UpdateDiagnosisRequest

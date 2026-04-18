@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 
 namespace PatientTracker.Application.Services;
 
@@ -9,12 +12,16 @@ public class SurgeryService : ISurgeryService
     private readonly ISurgeryRepository _surgeryRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public SurgeryService(ISurgeryRepository surgeryRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public SurgeryService(ISurgeryRepository surgeryRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IDocumentRepository documentRepository, IStringLocalizer<ErrorMessages> localizer)
     {
         _surgeryRepository = surgeryRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _documentRepository = documentRepository;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<SurgeryDto>> GetSurgeriesAsync(int userId)
@@ -60,10 +67,11 @@ public class SurgeryService : ISurgeryService
 
     public async Task<SurgeryDto> CreateSurgeryAsync(int userId, CreateSurgeryRequest request)
     {
+        // Verify user exists
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            throw new InvalidOperationException(_localizer["UserNotFound"]);
         }
 
         var surgery = new Surgery
@@ -82,6 +90,23 @@ public class SurgeryService : ISurgeryService
 
         _surgeryRepository.Add(surgery);
         await _unitOfWork.CompleteAsync();
+
+        // If there are any temporary documents for this user with ParentEntityType = Surgery and ParentEntityId = null,
+        // update them to link to this surgery
+        if (request.DocumentIds != null && request.DocumentIds.Any())
+        {
+            var documents = await _documentRepository.GetByIdsAsync(request.DocumentIds);
+            foreach (var document in documents)
+            {
+                if (document.UserId == userId && document.ParentEntityType == ParentEntityType.Surgery && document.ParentEntityId == null)
+                {
+                    document.ParentEntityId = surgery.Id;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    _documentRepository.Update(document);
+                }
+            }
+            await _unitOfWork.CompleteAsync();
+        }
 
         return new SurgeryDto
         {
@@ -103,7 +128,7 @@ public class SurgeryService : ISurgeryService
         var surgery = await _surgeryRepository.GetByIdAsync(id);
         if (surgery == null || surgery.UserId != userId)
         {
-            throw new InvalidOperationException("Surgery not found or access denied");
+            throw new InvalidOperationException(_localizer["SurgeryNotFound"]);
         }
 
         surgery.SurgeryName = request.SurgeryName;

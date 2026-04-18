@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 
 namespace PatientTracker.Application.Services;
 
@@ -9,12 +12,16 @@ public class LabTestService : ILabTestService
     private readonly ILabTestRepository _labTestRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public LabTestService(ILabTestRepository labTestRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public LabTestService(ILabTestRepository labTestRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IDocumentRepository documentRepository, IStringLocalizer<ErrorMessages> localizer)
     {
         _labTestRepository = labTestRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _documentRepository = documentRepository;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<LabTestDto>> GetLabTestsAsync(int userId)
@@ -62,10 +69,11 @@ public class LabTestService : ILabTestService
 
     public async Task<LabTestDto> CreateLabTestAsync(int userId, CreateLabTestRequest request)
     {
+        // Verify user exists
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            throw new InvalidOperationException(_localizer["UserNotFound"]);
         }
 
         var labTest = new LabTest
@@ -85,6 +93,23 @@ public class LabTestService : ILabTestService
 
         _labTestRepository.Add(labTest);
         await _unitOfWork.CompleteAsync();
+
+        // If there are any temporary documents for this user with ParentEntityType = LabTest and ParentEntityId = null,
+        // update them to link to this lab test
+        if (request.DocumentIds != null && request.DocumentIds.Any())
+        {
+            var documents = await _documentRepository.GetByIdsAsync(request.DocumentIds);
+            foreach (var document in documents)
+            {
+                if (document.UserId == userId && document.ParentEntityType == ParentEntityType.LabTest && document.ParentEntityId == null)
+                {
+                    document.ParentEntityId = labTest.Id;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    _documentRepository.Update(document);
+                }
+            }
+            await _unitOfWork.CompleteAsync();
+        }
 
         return new LabTestDto
         {
@@ -107,7 +132,7 @@ public class LabTestService : ILabTestService
         var labTest = await _labTestRepository.GetByIdAsync(id);
         if (labTest == null || labTest.UserId != userId)
         {
-            throw new InvalidOperationException("Lab test not found or access denied");
+            throw new InvalidOperationException(_localizer["LabTestNotFound"]);
         }
 
         labTest.TestName = request.TestName;

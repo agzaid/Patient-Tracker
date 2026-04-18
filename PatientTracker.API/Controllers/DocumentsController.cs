@@ -56,6 +56,58 @@ public class DocumentsController : ControllerBase
     }
 
     /// <summary>
+    /// Upload multiple documents
+    /// </summary>
+    /// <param name="request">Upload document list request</param>
+    /// <returns>List of uploaded document details</returns>
+    [HttpPost("list")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<List<DocumentDto>>> UploadDocumentList([FromForm] UploadDocumentListRequest request)
+    {
+        try
+        {
+            if (request.Files == null || request.Files.Count == 0)
+            {
+                return BadRequest(new { error = _localizer["NoFilesUploaded"] });
+            }
+
+            var userId = GetUserId();
+            var uploadedDocuments = new List<DocumentDto>();
+
+            foreach (var file in request.Files)
+            {
+                if (file != null && file.Length > 0)
+                {
+                    var uploadRequest = new UploadDocumentRequest
+                    {
+                        File = file,
+                        DocumentType = request.DocumentType,
+                        ParentEntityType = request.ParentEntityType ?? default(ParentEntityType),
+                        ParentEntityId = request.ParentEntityId,
+                        MaxWidth = request.MaxWidth,
+                        MaxHeight = request.MaxHeight
+                    };
+
+                    var document = await _documentService.UploadDocumentAsync(uploadRequest, userId);
+                    uploadedDocuments.Add(document);
+                }
+            }
+
+            return Ok(uploadedDocuments);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            // Log the error so you can see it in your terminal
+            Log.Error(ex, "Document list upload failed");
+            return StatusCode(500, new { error = _localizer["ErrorUploadingDocuments"] });
+        }
+    }
+
+    /// <summary>
     /// Get user's documents
     /// </summary>
     /// <returns>List of user's documents</returns>

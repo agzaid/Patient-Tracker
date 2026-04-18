@@ -72,6 +72,12 @@
   <data name="InvalidUserIdentifier" xml:space="preserve">
     <value>Invalid user identifier</value>
   </data>
+  <data name="NoFilesUploaded" xml:space="preserve">
+    <value>No files uploaded</value>
+  </data>
+  <data name="ErrorUploadingDocuments" xml:space="preserve">
+    <value>Error uploading documents</value>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid authentication token</value>
   </data>
@@ -223,6 +229,9 @@
   <data name="MedicationDeletedSuccessfully" xml:space="preserve">
     <value>Medication deleted successfully</value>
   </data>
+  <data name="LabTestNotFound" xml:space="preserve">
+    <value>Lab test not found</value>
+  </data>
   
   <!-- Lab Test -->
   <data name="LabTestNotFound" xml:space="preserve">
@@ -230,6 +239,15 @@
   </data>
   <data name="ErrorCreatingLabTest" xml:space="preserve">
     <value>An error occurred while creating lab test</value>
+  </data>
+  <data name="RadiologyScanNotFound" xml:space="preserve">
+    <value>Radiology scan not found</value>
+  </data>
+  <data name="DiagnosisNotFound" xml:space="preserve">
+    <value>Diagnosis not found</value>
+  </data>
+  <data name="SurgeryNotFound" xml:space="preserve">
+    <value>Surgery not found</value>
   </data>
   <data name="ErrorUpdatingLabTest" xml:space="preserve">
     <value>An error occurred while updating lab test</value>

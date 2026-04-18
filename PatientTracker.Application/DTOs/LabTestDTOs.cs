@@ -43,6 +43,8 @@ public class CreateLabTestRequest
 
     [MaxLength(500)]
     public string? ReportUrl { get; set; }
+
+    public List<int>? DocumentIds { get; set; }
 }
 
 public class UpdateLabTestRequest

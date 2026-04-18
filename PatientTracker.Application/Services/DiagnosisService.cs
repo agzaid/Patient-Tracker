@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 
 namespace PatientTracker.Application.Services;
 
@@ -9,12 +12,16 @@ public class DiagnosisService : IDiagnosisService
     private readonly IDiagnosisRepository _diagnosisRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public DiagnosisService(IDiagnosisRepository diagnosisRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public DiagnosisService(IDiagnosisRepository diagnosisRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IDocumentRepository documentRepository, IStringLocalizer<ErrorMessages> localizer)
     {
         _diagnosisRepository = diagnosisRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _documentRepository = documentRepository;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<DiagnosisDto>> GetDiagnosesAsync(int userId)
@@ -58,10 +65,11 @@ public class DiagnosisService : IDiagnosisService
 
     public async Task<DiagnosisDto> CreateDiagnosisAsync(int userId, CreateDiagnosisRequest request)
     {
+        // Verify user exists
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            throw new InvalidOperationException(_localizer["UserNotFound"]);
         }
 
         var diagnosis = new Diagnosis
@@ -79,6 +87,23 @@ public class DiagnosisService : IDiagnosisService
 
         _diagnosisRepository.Add(diagnosis);
         await _unitOfWork.CompleteAsync();
+
+        // If there are any temporary documents for this user with ParentEntityType = Diagnosis and ParentEntityId = null,
+        // update them to link to this diagnosis
+        if (request.DocumentIds != null && request.DocumentIds.Any())
+        {
+            var documents = await _documentRepository.GetByIdsAsync(request.DocumentIds);
+            foreach (var document in documents)
+            {
+                if (document.UserId == userId && document.ParentEntityType == ParentEntityType.Diagnosis && document.ParentEntityId == null)
+                {
+                    document.ParentEntityId = diagnosis.Id;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    _documentRepository.Update(document);
+                }
+            }
+            await _unitOfWork.CompleteAsync();
+        }
 
         return new DiagnosisDto
         {
@@ -99,7 +124,7 @@ public class DiagnosisService : IDiagnosisService
         var diagnosis = await _diagnosisRepository.GetByIdAsync(id);
         if (diagnosis == null || diagnosis.UserId != userId)
         {
-            throw new InvalidOperationException("Diagnosis not found or access denied");
+            throw new InvalidOperationException(_localizer["DiagnosisNotFound"]);
         }
 
         diagnosis.DiagnosisName = request.DiagnosisName;

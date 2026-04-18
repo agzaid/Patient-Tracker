@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace PatientTracker.Application.DTOs;
 
@@ -43,6 +44,8 @@ public class CreateRadiologyScanRequest
 
     [MaxLength(255)]
     public string? DoctorName { get; set; }
+
+    public List<int>? DocumentIds { get; set; }
 }
 
 public class UpdateRadiologyScanRequest

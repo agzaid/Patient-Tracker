@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace PatientTracker.Application.DTOs;
 
@@ -39,6 +40,9 @@ public class CreateSurgeryRequest
 
     [MaxLength(500)]
     public string? ReportUrl { get; set; }
+    
+    [JsonPropertyName("documentIds")]
+    public List<int>? DocumentIds { get; set; }
 }
 
 public class UpdateSurgeryRequest
