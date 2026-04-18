@@ -12,6 +12,7 @@ public class DiagnosisDto
     public string? Severity { get; set; }
     public string? Status { get; set; }
     public string? Notes { get; set; }
+    public List<DocumentDto> Documents { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

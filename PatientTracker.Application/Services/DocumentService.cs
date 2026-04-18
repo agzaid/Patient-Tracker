@@ -17,6 +17,7 @@ public interface IDocumentService
     Task<IEnumerable<DocumentDto>> GetEntityDocumentsAsync(ParentEntityType entityType, int entityId);
     Task<bool> DeleteDocumentAsync(int documentId, int userId);
     Task<DocumentDto?> GetDocumentAsync(int documentId, int userId);
+    Task<DocumentDto?> GetDocumentForSharedLinkAsync(int documentId);
 }
 
 public class DocumentService : IDocumentService
@@ -218,6 +219,17 @@ public class DocumentService : IDocumentService
         return filePath;
     }
 
+    public async Task<DocumentDto?> GetDocumentForSharedLinkAsync(int documentId)
+    {
+        var document = await _documentRepository.GetByIdAsync(documentId);
+        if (document == null)
+        {
+            return null;
+        }
+
+        return MapToDto(document);
+    }
+
     private void DeleteFile(string filePath)
     {
         try
@@ -238,6 +250,7 @@ public class DocumentService : IDocumentService
         return new DocumentDto
         {
             Id = document.Id,
+            UserId = document.UserId,
             FileName = document.FileName,
             OriginalFileName = document.OriginalFileName,
             ContentType = document.ContentType,

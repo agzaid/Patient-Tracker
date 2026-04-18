@@ -31,6 +31,7 @@ public class ProfileService : IProfileService
         return new ProfileDto
         {
             Id = profile.Id,
+            UserId = profile.UserId,
             FullName = profile.FullName,
             DateOfBirth = profile.DateOfBirth,
             Gender = profile.Gender,
@@ -88,6 +89,7 @@ public class ProfileService : IProfileService
         return new ProfileDto
         {
             Id = profile.Id,
+            UserId = profile.UserId,
             FullName = profile.FullName,
             DateOfBirth = profile.DateOfBirth,
             Gender = profile.Gender,
@@ -148,6 +150,7 @@ public class ProfileService : IProfileService
         return new ProfileDto
         {
             Id = profile.Id,
+            UserId = profile.UserId,
             FullName = profile.FullName,
             DateOfBirth = profile.DateOfBirth,
             Gender = profile.Gender,

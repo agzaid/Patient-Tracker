@@ -133,10 +133,14 @@ public class SharedLinksController : ControllerBase
 public class ShareController : ControllerBase
 {
     private readonly ISharedLinkService _sharedLinkService;
+    private readonly IDocumentService _documentService;
+    private readonly IConfiguration _configuration;
 
-    public ShareController(ISharedLinkService sharedLinkService)
+    public ShareController(ISharedLinkService sharedLinkService, IDocumentService documentService, IConfiguration configuration)
     {
         _sharedLinkService = sharedLinkService;
+        _documentService = documentService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -150,7 +154,7 @@ public class ShareController : ControllerBase
     {
         try
         {
-            var profile = await _sharedLinkService.GetSharedProfileAsync(token);
+            var profile = await _sharedLinkService.GetSharedProfileAsync(token); 
             
             if (profile == null)
             {
@@ -162,6 +166,62 @@ public class ShareController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while fetching shared profile" });
+        }
+    }
+
+    /// <summary>
+    /// Download document from shared profile (public endpoint)
+    /// </summary>
+    /// <param name="token">Share token</param>
+    /// <param name="documentId">Document ID</param>
+    /// <returns>File stream</returns>
+    [HttpGet("{token}/documents/{documentId}/download")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DownloadSharedDocument(string token, int documentId)
+    {
+        try
+        {
+            // Validate token and get shared profile
+            var profile = await _sharedLinkService.GetSharedProfileAsync(token);
+            
+            if (profile == null)
+            {
+                return NotFound(new { error = "Shared link not found, expired, or inactive" });
+            }
+
+            // Get document without user validation (since this is a shared link)
+            var document = await _documentService.GetDocumentForSharedLinkAsync(documentId);
+            
+            if (document == null)
+            {
+                return NotFound(new { error = "Document not found" });
+            }
+
+            // Check if document belongs to the shared profile owner
+            if (document.UserId != profile.Profile.UserId)
+            {
+                return Forbid();
+            }
+
+            if (!System.IO.File.Exists(document.FilePath))
+            {
+                return NotFound(new { error = "File not found" });
+            }
+
+            // Validate file path to prevent directory traversal
+            var fullPath = Path.GetFullPath(document.FilePath);
+            var uploadsPath = Path.GetFullPath(_configuration["Uploads:Path"] ?? "uploads");
+            if (!fullPath.StartsWith(uploadsPath))
+            {
+                return BadRequest(new { error = "Invalid file path" });
+            }
+
+            var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
+            return File(fileStream, document.ContentType, document.OriginalFileName);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while downloading document" });
         }
     }
 }

@@ -13,6 +13,7 @@ public class MedicationDto
     public bool IsCurrent { get; set; }
     public string? Notes { get; set; }
     public string? PrescriptionUrl { get; set; }
+    public List<DocumentDto> Documents { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

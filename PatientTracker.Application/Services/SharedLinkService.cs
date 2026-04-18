@@ -1,6 +1,7 @@
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
 using PatientTracker.Domain.Entities;
+using PatientTracker.Domain.Enums;
 using System.Text.Json;
 
 namespace PatientTracker.Application.Services;
@@ -15,6 +16,7 @@ public class SharedLinkService : ISharedLinkService
     private readonly IRadiologyService _radiologyService;
     private readonly IDiagnosisService _diagnosisService;
     private readonly ISurgeryService _surgeryService;
+    private readonly IDocumentRepository _documentRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public SharedLinkService(
@@ -26,6 +28,7 @@ public class SharedLinkService : ISharedLinkService
         IRadiologyService radiologyService,
         IDiagnosisService diagnosisService,
         ISurgeryService surgeryService,
+        IDocumentRepository documentRepository,
         IUnitOfWork unitOfWork)
     {
         _sharedLinkRepository = sharedLinkRepository;
@@ -36,6 +39,7 @@ public class SharedLinkService : ISharedLinkService
         _radiologyService = radiologyService;
         _diagnosisService = diagnosisService;
         _surgeryService = surgeryService;
+        _documentRepository = documentRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -157,35 +161,88 @@ public class SharedLinkService : ISharedLinkService
             response.Profile = profile;
         }
 
+        // Fetch all documents for the user (batch fetch for efficiency)
+        var allDocuments = await _documentRepository.GetByUserIdAsync(userId);
+        var documentsByEntity = allDocuments
+            .Where(d => d.ParentEntityId.HasValue)
+            .GroupBy(d => new { d.ParentEntityType, d.ParentEntityId })
+            .ToDictionary(g => (g.Key.ParentEntityType, g.Key.ParentEntityId!.Value), g => g.ToList());
+
+        // Helper function to convert documents to DTOs
+        List<DocumentDto> GetDocumentsForEntity(ParentEntityType entityType, int entityId)
+        {
+            if (documentsByEntity.TryGetValue((entityType, entityId), out var documents))
+            {
+                return documents.Select(d => new DocumentDto
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    OriginalFileName = d.OriginalFileName,
+                    ContentType = d.ContentType,
+                    FileSize = d.FileSize,
+                    FilePath = d.FilePath,
+                    ThumbnailPath = d.ThumbnailPath,
+                    Width = d.Width,
+                    Height = d.Height,
+                    DocumentType = d.DocumentType,
+                    ParentEntityType = d.ParentEntityType,
+                    ParentEntityId = d.ParentEntityId,
+                    CreatedAt = d.CreatedAt,
+                    UpdatedAt = d.UpdatedAt
+                }).ToList();
+            }
+            return new List<DocumentDto>();
+        }
+
         // Include categories based on what was shared
         if (categories.Contains("medications"))
         {
             var medications = await _medicationService.GetMedicationsAsync(userId);
-            response.Medications = medications.ToList();
+            response.Medications = medications.Select(m => 
+            {
+                m.Documents = GetDocumentsForEntity(ParentEntityType.Medication, m.Id);
+                return m;
+            }).ToList();
         }
 
         if (categories.Contains("lab_tests"))
         {
             var labTests = await _labTestService.GetLabTestsAsync(userId);
-            response.LabTests = labTests.ToList();
+            response.LabTests = labTests.Select(l => 
+            {
+                l.Documents = GetDocumentsForEntity(ParentEntityType.LabTest, l.Id);
+                return l;
+            }).ToList();
         }
 
         if (categories.Contains("radiology"))
         {
             var radiologyScans = await _radiologyService.GetRadiologyScansAsync(userId);
-            response.RadiologyScans = radiologyScans.ToList();
+            response.RadiologyScans = radiologyScans.Select(r => 
+            {
+                r.Documents = GetDocumentsForEntity(ParentEntityType.RadiologyScan, r.Id);
+                return r;
+            }).ToList();
         }
 
         if (categories.Contains("diagnoses"))
         {
             var diagnoses = await _diagnosisService.GetDiagnosesAsync(userId);
-            response.Diagnoses = diagnoses.ToList();
+            response.Diagnoses = diagnoses.Select(d => 
+            {
+                d.Documents = GetDocumentsForEntity(ParentEntityType.Diagnosis, d.Id);
+                return d;
+            }).ToList();
         }
 
         if (categories.Contains("surgeries"))
         {
             var surgeries = await _surgeryService.GetSurgeriesAsync(userId);
-            response.Surgeries = surgeries.ToList();
+            response.Surgeries = surgeries.Select(s => 
+            {
+                s.Documents = GetDocumentsForEntity(ParentEntityType.Surgery, s.Id);
+                return s;
+            }).ToList();
         }
 
         return response;
