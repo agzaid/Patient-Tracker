@@ -19,19 +19,18 @@ public class TimelineController : ControllerBase
     }
 
     /// <summary>
-    /// Get timeline for the authenticated user
+    /// Get timeline for the authenticated user (paginated)
     /// </summary>
-    /// <param name="typeFilter">Filter by type (all, medication, lab_test, radiology, diagnosis, surgery)</param>
-    /// <param name="dateRange">Filter by date range (all, 30d, 6m, 1y)</param>
-    /// <returns>Timeline items</returns>
+    /// <param name="parameters">Query parameters for pagination, search, and filters</param>
+    /// <returns>Paginated list of timeline items</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TimelineItemDto>>> GetTimeline([FromQuery] string? typeFilter = "all", [FromQuery] string? dateRange = "all")
+    public async Task<ActionResult<PaginatedResponse<TimelineItemDto>>> GetTimeline([FromQuery] TimelineQueryParameters parameters)
     {
         try
         {
             var userId = GetUserId();
-            var timeline = await _timelineService.GetTimelineAsync(userId, typeFilter, dateRange);
-            return Ok(timeline);
+            var paginatedTimeline = await _timelineService.GetTimelinePaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search, parameters.TypeFilter, parameters.DateRange);
+            return Ok(paginatedTimeline);
         }
         catch (Exception ex)
         {

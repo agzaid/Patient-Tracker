@@ -43,6 +43,39 @@ public class RadiologyService : IRadiologyService
         });
     }
 
+    public async Task<PaginatedResponse<RadiologyScanDto>> GetRadiologyScansPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
+    {
+        // Ensure page and pageSize are valid
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit max page size to 100
+
+        var totalCount = await _radiologyRepository.CountByUserIdAsync(userId, search);
+        var radiologyScans = await _radiologyRepository.GetByUserIdAsync(userId, page, pageSize, search);
+
+        var radiologyScanDtos = radiologyScans.Select(r => new RadiologyScanDto
+        {
+            Id = r.Id,
+            ScanType = r.ScanType,
+            BodyPart = r.BodyPart,
+            ScanDate = r.ScanDate,
+            Description = r.Description,
+            DoctorNotes = r.DoctorNotes,
+            ReportUrl = r.ReportUrl,
+            HospitalName = r.HospitalName,
+            DoctorName = r.DoctorName,
+            CreatedAt = r.CreatedAt,
+            UpdatedAt = r.UpdatedAt
+        });
+
+        return new PaginatedResponse<RadiologyScanDto>
+        {
+            Items = radiologyScanDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<RadiologyScanDto?> GetRadiologyScanAsync(int id, int userId)
     {
         var radiology = await _radiologyRepository.GetByIdAsync(id);

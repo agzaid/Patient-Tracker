@@ -5,6 +5,7 @@ namespace PatientTracker.Application.Services;
 public interface IRadiologyService
 {
     Task<IEnumerable<RadiologyScanDto>> GetRadiologyScansAsync(int userId);
+    Task<PaginatedResponse<RadiologyScanDto>> GetRadiologyScansPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null);
     Task<RadiologyScanDto?> GetRadiologyScanAsync(int id, int userId);
     Task<RadiologyScanDto> CreateRadiologyScanAsync(int userId, CreateRadiologyScanRequest request);
     Task<RadiologyScanDto> UpdateRadiologyScanAsync(int id, int userId, UpdateRadiologyScanRequest request);

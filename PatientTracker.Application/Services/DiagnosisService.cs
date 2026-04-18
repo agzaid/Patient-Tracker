@@ -41,6 +41,37 @@ public class DiagnosisService : IDiagnosisService
         });
     }
 
+    public async Task<PaginatedResponse<DiagnosisDto>> GetDiagnosesPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
+    {
+        // Ensure page and pageSize are valid
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit max page size to 100
+
+        var totalCount = await _diagnosisRepository.CountByUserIdAsync(userId, search);
+        var diagnoses = await _diagnosisRepository.GetByUserIdAsync(userId, page, pageSize, search);
+
+        var diagnosisDtos = diagnoses.Select(d => new DiagnosisDto
+        {
+            Id = d.Id,
+            DiagnosisName = d.DiagnosisName,
+            DateDiagnosed = d.DateDiagnosed,
+            DoctorName = d.DoctorName,
+            Severity = d.Severity,
+            Status = d.Status,
+            Notes = d.Notes,
+            CreatedAt = d.CreatedAt,
+            UpdatedAt = d.UpdatedAt
+        });
+
+        return new PaginatedResponse<DiagnosisDto>
+        {
+            Items = diagnosisDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<DiagnosisDto?> GetDiagnosisAsync(int id, int userId)
     {
         var diagnosis = await _diagnosisRepository.GetByIdAsync(id);

@@ -42,6 +42,38 @@ public class SurgeryService : ISurgeryService
         });
     }
 
+    public async Task<PaginatedResponse<SurgeryDto>> GetSurgeriesPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
+    {
+        // Ensure page and pageSize are valid
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit max page size to 100
+
+        var totalCount = await _surgeryRepository.CountByUserIdAsync(userId, search);
+        var surgeries = await _surgeryRepository.GetByUserIdAsync(userId, page, pageSize, search);
+
+        var surgeryDtos = surgeries.Select(s => new SurgeryDto
+        {
+            Id = s.Id,
+            SurgeryName = s.SurgeryName,
+            SurgeryDate = s.SurgeryDate,
+            HospitalName = s.HospitalName,
+            SurgeonName = s.SurgeonName,
+            Description = s.Description,
+            Notes = s.Notes,
+            ReportUrl = s.ReportUrl,
+            CreatedAt = s.CreatedAt,
+            UpdatedAt = s.UpdatedAt
+        });
+
+        return new PaginatedResponse<SurgeryDto>
+        {
+            Items = surgeryDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<SurgeryDto?> GetSurgeryAsync(int id, int userId)
     {
         var surgery = await _surgeryRepository.GetByIdAsync(id);

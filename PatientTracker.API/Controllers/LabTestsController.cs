@@ -23,17 +23,18 @@ public class LabTestsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all lab tests for the authenticated user
+    /// Get all lab tests for the authenticated user (paginated)
     /// </summary>
-    /// <returns>List of lab tests</returns>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of lab tests</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LabTestDto>>> GetLabTests()
+    public async Task<ActionResult<PaginatedResponse<LabTestDto>>> GetLabTests([FromQuery] QueryParameters parameters)
     {
         try
         {
             var userId = GetUserId();
-            var labTests = await _labTestService.GetLabTestsAsync(userId);
-            return Ok(labTests);
+            var paginatedLabTests = await _labTestService.GetLabTestsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            return Ok(paginatedLabTests);
         }
         catch (Exception ex)
         {

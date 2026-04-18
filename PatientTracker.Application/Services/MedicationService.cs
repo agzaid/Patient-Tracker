@@ -43,6 +43,39 @@ public class MedicationService : IMedicationService
         });
     }
 
+    public async Task<PaginatedResponse<MedicationDto>> GetMedicationsPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
+    {
+        // Ensure page and pageSize are valid
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit max page size to 100
+
+        var totalCount = await _medicationRepository.CountByUserIdAsync(userId, search);
+        var medications = await _medicationRepository.GetByUserIdAsync(userId, page, pageSize, search);
+
+        var medicationDtos = medications.Select(m => new MedicationDto
+        {
+            Id = m.Id,
+            Name = m.Name,
+            Dosage = m.Dosage,
+            Frequency = m.Frequency,
+            StartDate = m.StartDate,
+            EndDate = m.EndDate,
+            IsCurrent = m.IsCurrent,
+            Notes = m.Notes,
+            PrescriptionUrl = m.PrescriptionUrl,
+            CreatedAt = m.CreatedAt,
+            UpdatedAt = m.UpdatedAt
+        });
+
+        return new PaginatedResponse<MedicationDto>
+        {
+            Items = medicationDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<MedicationDto?> GetMedicationAsync(int id, int userId)
     {
         var medication = await _medicationRepository.GetByIdAsync(id);

@@ -23,17 +23,18 @@ public class RadiologyController : ControllerBase
     }
 
     /// <summary>
-    /// Get all radiology scans for the authenticated user
+    /// Get all radiology scans for the authenticated user (paginated)
     /// </summary>
-    /// <returns>List of radiology scans</returns>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of radiology scans</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RadiologyScanDto>>> GetRadiologyScans()
+    public async Task<ActionResult<PaginatedResponse<RadiologyScanDto>>> GetRadiologyScans([FromQuery] QueryParameters parameters)
     {
         try
         {
             var userId = GetUserId();
-            var scans = await _radiologyService.GetRadiologyScansAsync(userId);
-            return Ok(scans);
+            var paginatedScans = await _radiologyService.GetRadiologyScansPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            return Ok(paginatedScans);
         }
         catch (Exception ex)
         {

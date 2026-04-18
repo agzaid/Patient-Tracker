@@ -43,6 +43,39 @@ public class LabTestService : ILabTestService
         });
     }
 
+    public async Task<PaginatedResponse<LabTestDto>> GetLabTestsPaginatedAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
+    {
+        // Ensure page and pageSize are valid
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit max page size to 100
+
+        var totalCount = await _labTestRepository.CountByUserIdAsync(userId, search);
+        var labTests = await _labTestRepository.GetByUserIdAsync(userId, page, pageSize, search);
+
+        var labTestDtos = labTests.Select(l => new LabTestDto
+        {
+            Id = l.Id,
+            TestName = l.TestName,
+            TestDate = l.TestDate,
+            ResultValue = l.ResultValue,
+            ResultUnit = l.ResultUnit,
+            NormalRange = l.NormalRange,
+            Status = l.Status,
+            Notes = l.Notes,
+            ReportUrl = l.ReportUrl,
+            CreatedAt = l.CreatedAt,
+            UpdatedAt = l.UpdatedAt
+        });
+
+        return new PaginatedResponse<LabTestDto>
+        {
+            Items = labTestDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<LabTestDto?> GetLabTestAsync(int id, int userId)
     {
         var labTest = await _labTestRepository.GetByIdAsync(id);

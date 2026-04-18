@@ -23,17 +23,18 @@ public class MedicationsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all medications for the authenticated user
+    /// Get all medications for the authenticated user (paginated)
     /// </summary>
-    /// <returns>List of medications</returns>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of medications</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MedicationDto>>> GetMedications()
+    public async Task<ActionResult<PaginatedResponse<MedicationDto>>> GetMedications([FromQuery] QueryParameters parameters)
     {
         try
         {
             var userId = GetUserId();
-            var medications = await _medicationService.GetMedicationsAsync(userId);
-            return Ok(medications);
+            var paginatedMedications = await _medicationService.GetMedicationsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            return Ok(paginatedMedications);
         }
         catch (Exception ex)
         {

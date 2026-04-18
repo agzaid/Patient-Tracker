@@ -23,17 +23,18 @@ public class DiagnosesController : ControllerBase
     }
 
     /// <summary>
-    /// Get all diagnoses for the authenticated user
+    /// Get all diagnoses for the authenticated user (paginated)
     /// </summary>
-    /// <returns>List of diagnoses</returns>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of diagnoses</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<DiagnosisDto>>> GetDiagnoses()
+    public async Task<ActionResult<PaginatedResponse<DiagnosisDto>>> GetDiagnoses([FromQuery] QueryParameters parameters)
     {
         try
         {
             var userId = GetUserId();
-            var diagnoses = await _diagnosisService.GetDiagnosesAsync(userId);
-            return Ok(diagnoses);
+            var paginatedDiagnoses = await _diagnosisService.GetDiagnosesPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            return Ok(paginatedDiagnoses);
         }
         catch (Exception ex)
         {
