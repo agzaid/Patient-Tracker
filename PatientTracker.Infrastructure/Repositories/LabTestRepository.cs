@@ -72,4 +72,22 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
 
         return await query.CountAsync();
     }
+
+    public async Task<IEnumerable<LabTest>> GetByDocumentIdAsync(int documentId)
+    {
+        return await _context.LabTests
+            .Where(l => l.LabTestDocumentId == documentId)
+            .OrderBy(l => l.TestName)
+            .ToListAsync();
+    }
+
+    public void AddRange(IEnumerable<LabTest> labTests)
+    {
+        _context.LabTests.AddRange(labTests);
+    }
+
+    public void DeleteRange(IEnumerable<LabTest> labTests)
+    {
+        _context.LabTests.RemoveRange(labTests);
+    }
 }

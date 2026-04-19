@@ -145,6 +145,15 @@ builder.Services.AddScoped<ITimelineService, TimelineService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
+builder.Services.AddScoped<ILabTestExtractionService, LabTestExtractionService>();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
+
+// HttpClient for Gemini
+builder.Services.AddHttpClient<IGeminiService, GeminiService>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.DefaultRequestHeaders.Add("User-Agent", "PatientTracker/1.0");
+});
 
 // Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -154,6 +163,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<ILabTestRepository, LabTestRepository>();
+builder.Services.AddScoped<ILabTestDocumentRepository, LabTestDocumentRepository>();
 builder.Services.AddScoped<IRadiologyRepository, RadiologyRepository>();
 builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
 builder.Services.AddScoped<ISurgeryRepository, SurgeryRepository>();

@@ -143,6 +143,46 @@ public class LabTestsController : ControllerBase
         }
     }
 
+    [HttpGet("documents")]
+    public async Task<ActionResult<PaginatedResponse<LabTestDocumentDto>>> GetLabTestDocuments(
+        [FromQuery] LabTestDocumentsQueryParameters parameters)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
+            var documents = await extractionService.GetLabTestDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            
+            return Ok(documents);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTests"] });
+        }
+    }
+
+    [HttpGet("documents/{documentId}")]
+    public async Task<ActionResult<LabTestDocumentWithTestsDto>> GetLabTestDocumentWithTests(int documentId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
+            var document = await extractionService.GetLabTestDocumentWithTestsAsync(userId, documentId);
+            
+            if (document == null)
+            {
+                return NotFound(new { error = _localizer["LabTestNotFound"] });
+            }
+
+            return Ok(document);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTest"] });
+        }
+    }
+
     private int GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

@@ -6,6 +6,7 @@ public class LabTest
 {
     public int Id { get; set; }
     public int UserId { get; set; }
+    public int? LabTestDocumentId { get; set; }
     
     [Required]
     [MaxLength(255)]
@@ -34,6 +35,7 @@ public class LabTest
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    // Navigation property
+    // Navigation properties
     public User User { get; set; } = null!;
+    public LabTestDocument? LabTestDocument { get; set; }
 }
