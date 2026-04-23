@@ -15,7 +15,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
     {
         return await _context.Diagnoses
             .Where(d => d.UserId == userId)
-            .OrderByDescending(d => d.DateDiagnosed)
+            .OrderByDescending(d => d.CreatedAt)
             .ToListAsync();
     }
 
@@ -23,7 +23,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
     {
         return await _context.Diagnoses
             .Where(d => d.UserId == userId)
-            .OrderByDescending(d => d.DateDiagnosed)
+            .OrderByDescending(d => d.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -44,7 +44,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
         }
 
         return await query
-            .OrderByDescending(d => d.DateDiagnosed)
+            .OrderByDescending(d => d.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

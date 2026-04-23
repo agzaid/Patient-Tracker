@@ -15,7 +15,7 @@ public class MedicationRepository : GenericRepository<Medication>, IMedicationRe
     {
         return await _context.Medications
             .Where(m => m.UserId == userId)
-            .OrderByDescending(m => m.StartDate)
+            .OrderByDescending(m => m.CreatedAt)
             .ToListAsync();
     }
 
@@ -23,7 +23,7 @@ public class MedicationRepository : GenericRepository<Medication>, IMedicationRe
     {
         return await _context.Medications
             .Where(m => m.UserId == userId)
-            .OrderByDescending(m => m.StartDate)
+            .OrderByDescending(m => m.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -49,7 +49,7 @@ public class MedicationRepository : GenericRepository<Medication>, IMedicationRe
         }
 
         return await query
-            .OrderByDescending(m => m.StartDate)
+            .OrderByDescending(m => m.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

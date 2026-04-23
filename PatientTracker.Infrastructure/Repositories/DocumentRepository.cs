@@ -22,6 +22,14 @@ public class DocumentRepository : IDocumentRepository
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 
+    public async Task<Document?> GetByIdAsync(int? id)
+    {
+        if (!id.HasValue)
+            return null;
+            
+        return await GetByIdAsync(id.Value);
+    }
+
     public async Task<IEnumerable<Document>> GetByIdsAsync(IEnumerable<int> ids)
     {
         return await _context.Documents

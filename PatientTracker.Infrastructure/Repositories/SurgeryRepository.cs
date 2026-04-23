@@ -15,7 +15,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
     {
         return await _context.Surgeries
             .Where(s => s.UserId == userId)
-            .OrderByDescending(s => s.SurgeryDate)
+            .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
     }
 
@@ -23,7 +23,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
     {
         return await _context.Surgeries
             .Where(s => s.UserId == userId)
-            .OrderByDescending(s => s.SurgeryDate)
+            .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -44,7 +44,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
         }
 
         return await query
-            .OrderByDescending(s => s.SurgeryDate)
+            .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

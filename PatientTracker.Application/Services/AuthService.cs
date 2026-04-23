@@ -41,6 +41,7 @@ public class AuthService : IAuthService
         };
 
         _userRepository.Add(user);
+        await _unitOfWork.CompleteAsync(); // Save User first to get the ID
 
         // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(new UserDto
@@ -61,8 +62,7 @@ public class AuthService : IAuthService
         };
 
         _userRepository.CreateRefreshTokenAsync(refreshTokenEntity);
-
-        await _unitOfWork.CompleteAsync();
+        await _unitOfWork.CompleteAsync(); // Save RefreshToken
 
         return new AuthResponse
         {

@@ -1,8 +1,11 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using PatientTracker.Application.DTOs;
+using PatientTracker.Application.Common;
+using PatientTracker.Application.Resources;
 using Polly;
 using Polly.Retry;
 
@@ -13,15 +16,17 @@ public class GeminiService : IGeminiService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<GeminiService> _logger;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
     private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
     private readonly string _apiKey;
 
-    public GeminiService(HttpClient httpClient, IConfiguration configuration, ILogger<GeminiService> logger)
+    public GeminiService(HttpClient httpClient, IConfiguration configuration, ILogger<GeminiService> logger, IStringLocalizer<ErrorMessages> localizer)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
-        _apiKey = _configuration["Gemini:ApiKey"] ?? throw new InvalidOperationException("Gemini API key not configured");
+        _localizer = localizer;
+        _apiKey = _configuration["Gemini:ApiKey"] ?? throw new BusinessException(ErrorCodes.ConfigurationError, _localizer["GeminiApiKeyNotConfigured"].Value);
         
         // Configure retry policy with exponential backoff
         _retryPolicy = Policy<HttpResponseMessage>
@@ -102,7 +107,7 @@ public class GeminiService : IGeminiService
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogError("Gemini API error: {StatusCode} - {Error}", response.StatusCode, errorContent);
-                throw new InvalidOperationException($"Failed to extract lab tests: {response.StatusCode}");
+                throw new BusinessException(ErrorCodes.ServiceUnavailable, string.Format(_localizer["GeminiApiError"].Value, response.StatusCode));
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -114,14 +119,14 @@ public class GeminiService : IGeminiService
             
             if (candidates.GetArrayLength() == 0)
             {
-                throw new InvalidOperationException("No response from Gemini API");
+                throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiNoResponse"].Value);
             }
 
             var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
             
             if (string.IsNullOrEmpty(text))
             {
-                throw new InvalidOperationException("Empty response from Gemini API");
+                throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiEmptyResponse"].Value);
             }
 
             // Clean markdown formatting if present
@@ -144,6 +149,92 @@ public class GeminiService : IGeminiService
             _logger.LogError(ex, "Error extracting lab tests from file: {FileName}", fileName);
             throw;
         }
+    }
+
+    public async Task<string> GenerateResponseAsync(string prompt, string? base64Content = null, string? contentType = null)
+    {
+        try
+        {
+            var requestPayload = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = BuildChatParts(prompt, base64Content, contentType)
+                    }
+                },
+                generation_config = new
+                {
+                    temperature = 0.7,
+                    max_output_tokens = 2048,
+                    response_mime_type = "text/plain"
+                }
+            };
+
+            var json = JsonSerializer.Serialize(requestPayload, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+            });
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync(
+                $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={_apiKey}",
+                content);
+
+            response.EnsureSuccessStatusCode();
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(responseJson);
+            var text = doc.RootElement
+                .GetProperty("candidates")
+                .EnumerateArray()
+                .FirstOrDefault()
+                .GetProperty("content")
+                .GetProperty("parts")
+                .EnumerateArray()
+                .FirstOrDefault()
+                .GetProperty("text")
+                .GetString();
+
+            return text ?? "I apologize, but I couldn't generate a response.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating response from Gemini");
+            throw;
+        }
+    }
+
+    private object[] BuildChatParts(string prompt, string? base64Content, string? contentType)
+    {
+        var parts = new List<object>();
+
+        if (!string.IsNullOrEmpty(base64Content) && !string.IsNullOrEmpty(contentType))
+        {
+            parts.Add(new
+            {
+                text = prompt
+            });
+
+            parts.Add(new
+            {
+                inline_data = new
+                {
+                    mime_type = contentType,
+                    data = base64Content
+                }
+            });
+        }
+        else
+        {
+            parts.Add(new
+            {
+                text = prompt
+            });
+        }
+
+        return parts.ToArray();
     }
 
     public async Task<bool> IsHealthyAsync()

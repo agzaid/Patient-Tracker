@@ -15,7 +15,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
     {
         return await _context.LabTests
             .Where(l => l.UserId == userId)
-            .OrderByDescending(l => l.TestDate)
+            .OrderByDescending(l => l.CreatedAt)
             .ToListAsync();
     }
 
@@ -23,7 +23,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
     {
         return await _context.LabTests
             .Where(l => l.UserId == userId)
-            .OrderByDescending(l => l.TestDate)
+            .OrderByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -44,7 +44,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
         }
 
         return await query
-            .OrderByDescending(l => l.TestDate)
+            .OrderByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

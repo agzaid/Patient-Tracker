@@ -146,6 +146,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 builder.Services.AddScoped<ILabTestExtractionService, LabTestExtractionService>();
+builder.Services.AddScoped<IDocumentChatService, DocumentChatService>();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 // HttpClient for Gemini
@@ -163,12 +164,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<ILabTestRepository, LabTestRepository>();
-builder.Services.AddScoped<ILabTestDocumentRepository, LabTestDocumentRepository>();
 builder.Services.AddScoped<IRadiologyRepository, RadiologyRepository>();
+builder.Services.AddScoped<ILabTestDocumentRepository, LabTestDocumentRepository>();
+builder.Services.AddScoped<IDocumentChatMessageRepository, DocumentChatMessageRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
 builder.Services.AddScoped<ISurgeryRepository, SurgeryRepository>();
 builder.Services.AddScoped<ISharedLinkRepository, SharedLinkRepository>();
-builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 
 var app = builder.Build();
 

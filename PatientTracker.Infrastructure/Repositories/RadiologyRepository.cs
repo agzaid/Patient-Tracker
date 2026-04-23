@@ -15,7 +15,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
     {
         return await _context.RadiologyScans
             .Where(r => r.UserId == userId)
-            .OrderByDescending(r => r.ScanDate)
+            .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
     }
 
@@ -23,7 +23,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
     {
         return await _context.RadiologyScans
             .Where(r => r.UserId == userId)
-            .OrderByDescending(r => r.ScanDate)
+            .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -45,7 +45,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
         }
 
         return await query
-            .OrderByDescending(r => r.ScanDate)
+            .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

@@ -183,6 +183,12 @@ public class LabTestsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Delete a lab test document and all related data
+    /// </summary>
+    /// <param name="documentId">Lab test document ID</param>
+    /// <returns>Delete result</returns>
+    
     private int GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SharedLink> SharedLinks { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Document> Documents { get; set; }
+    public DbSet<DocumentChatMessage> DocumentChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +160,23 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
             entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
             entity.Property(e => e.ThumbnailPath).HasMaxLength(500);
+        });
+
+        // DocumentChatMessage configuration
+        modelBuilder.Entity<DocumentChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Document)
+                  .WithMany()
+                  .HasForeignKey(e => e.DocumentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.UserMessage).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.AiResponse).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
         });
 
         // Seed data

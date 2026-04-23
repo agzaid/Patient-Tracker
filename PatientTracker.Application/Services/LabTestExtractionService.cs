@@ -1,9 +1,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Common;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
+using Polly;
 
 namespace PatientTracker.Application.Services;
 
@@ -13,17 +17,20 @@ public class LabTestExtractionService : ILabTestExtractionService
     private readonly IGeminiService _geminiService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<LabTestExtractionService> _logger;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     public LabTestExtractionService(
         IServiceScopeFactory scopeFactory,
         IGeminiService geminiService,
         IConfiguration configuration,
-        ILogger<LabTestExtractionService> logger)
+        ILogger<LabTestExtractionService> logger,
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _scopeFactory = scopeFactory;
         _geminiService = geminiService;
         _configuration = configuration;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task<LabTestExtractionResponse> UploadAndExtractAsync(int userId, UploadLabTestDocumentRequest request)
@@ -40,22 +47,28 @@ public class LabTestExtractionService : ILabTestExtractionService
             // Validate file
             if (request.File == null || request.File.Length == 0)
             {
-                throw new InvalidOperationException("No file provided");
+                throw new ValidationException(new Dictionary<string, string[]> { { "File", new[] { _localizer["NoFileProvided"].Value } } });
             }
 
             // Check file size (max 10MB)
             var maxSize = _configuration.GetValue<long>("LabTestExtraction:MaxFileSize", 10 * 1024 * 1024);
             if (request.File.Length > maxSize)
             {
-                throw new InvalidOperationException($"File size exceeds maximum allowed size of {maxSize / (1024 * 1024)}MB");
+                throw new ValidationException(new Dictionary<string, string[]> { { "FileSize", new[] { string.Format(_localizer["FileSizeExceedsMaximum"].Value, maxSize / (1024 * 1024)) } } });
             }
 
+            // Create user folder structure like DocumentService
+            var userFolder = userId.ToString();
+            var documentTypeFolder = "lab-reports"; // Lab test documents are lab reports
+            var fullUserFolder = Path.Combine(userFolder, documentTypeFolder);
+            
             // Save the file
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.File.FileName)}";
-            var uploadsPath = _configuration["Uploads:LabTestDocumentsPath"] ?? "uploads/lab-tests";
-            var filePath = Path.Combine(uploadsPath, fileName);
+            var uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
+            var userDirectory = Path.Combine(uploadsPath, fullUserFolder);
+            var filePath = Path.Combine(userDirectory, fileName);
             
-            Directory.CreateDirectory(uploadsPath);
+            Directory.CreateDirectory(userDirectory);
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await request.File.CopyToAsync(fileStream);
@@ -197,7 +210,7 @@ public class LabTestExtractionService : ILabTestExtractionService
             var document = await labTestDocumentRepository.GetByIdAsync(documentId);
             if (document == null || document.UserId != userId)
             {
-                throw new InvalidOperationException("Document not found");
+                throw new BusinessException(ErrorCodes.DocumentNotFound, _localizer["DocumentNotFound"]);
             }
 
             var labTests = await labTestRepository.GetByDocumentIdAsync(documentId);
@@ -243,7 +256,7 @@ public class LabTestExtractionService : ILabTestExtractionService
             var document = await labTestDocumentRepository.GetByIdAsync(documentId);
             if (document == null || document.UserId != userId)
             {
-                throw new InvalidOperationException("Document not found");
+                throw new BusinessException(ErrorCodes.DocumentNotFound, _localizer["DocumentNotFound"]);
             }
 
             // Delete existing extracted tests
@@ -285,7 +298,7 @@ public class LabTestExtractionService : ILabTestExtractionService
             var document = await labTestDocumentRepository.GetByIdAsync(documentId);
             if (document == null || document.UserId != userId)
             {
-                throw new InvalidOperationException("Document not found");
+                throw new BusinessException(ErrorCodes.DocumentNotFound, _localizer["DocumentNotFound"]);
             }
 
             var labTests = await labTestRepository.GetByDocumentIdAsync(documentId);
@@ -322,44 +335,65 @@ public class LabTestExtractionService : ILabTestExtractionService
         }
     }
 
-    public async Task<bool> DeleteLabTestDocumentAsync(int userId, int documentId)
+    public async Task<bool> DeleteLabTestDocumentAsync( int userId, int labTestDocumentId)
     {
         using var scope = _scopeFactory.CreateScope();
         var labTestDocumentRepository = scope.ServiceProvider.GetRequiredService<ILabTestDocumentRepository>();
         var labTestRepository = scope.ServiceProvider.GetRequiredService<ILabTestRepository>();
+        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         try
         {
-            var document = await labTestDocumentRepository.GetByIdAsync(documentId);
-            if (document == null || document.UserId != userId)
+            // 1. Get the lab test document
+            var labTestDocument = await labTestDocumentRepository.GetByIdAsync(labTestDocumentId);
+            if (labTestDocument == null || labTestDocument.UserId != userId)
             {
                 return false;
             }
 
-            // Delete associated lab tests
-            var labTests = await labTestRepository.GetByDocumentIdAsync(documentId);
-            labTestRepository.DeleteRange(labTests);
-
-            // Delete file
-            if (File.Exists(document.FilePath))
+            // 2. Delete extracted lab tests first (child records)
+            var labTests = await labTestRepository.GetByDocumentIdAsync(labTestDocumentId);
+            if (labTests.Any())
             {
-                File.Delete(document.FilePath);
+                labTestRepository.DeleteRange(labTests);
             }
 
-            // Delete document
-            labTestDocumentRepository.Delete(document);
-            await unitOfWork.CompleteAsync();
+            // 3. Delete the actual document file if DocumentId exists
+            if (labTestDocument.DocumentId.HasValue)
+            {
+                var document = await documentRepository.GetByIdAsync(labTestDocument.DocumentId.Value);
+                if (document != null)
+                {
+                    // Delete physical file
+                    if (File.Exists(document.FilePath))
+                    {
+                        File.Delete(document.FilePath);
+                    }
 
+                    // Delete thumbnail if exists
+                    if (!string.IsNullOrEmpty(document.ThumbnailPath) && File.Exists(document.ThumbnailPath))
+                    {
+                        File.Delete(document.ThumbnailPath);
+                    }
+
+                    // Delete document record
+                    documentRepository.Delete(document);
+                }
+            }
+
+            // 4. Delete the lab test document
+            labTestDocumentRepository.Delete(labTestDocument);
+
+            await unitOfWork.CompleteAsync();
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting lab test document {DocumentId}", documentId);
+            _logger.LogError(ex, "Error deleting lab test document {DocumentId}", labTestDocumentId);
             throw;
         }
     }
-
     private LabTestDocumentDto MapToDto(LabTestDocument document)
     {
         return new LabTestDocumentDto

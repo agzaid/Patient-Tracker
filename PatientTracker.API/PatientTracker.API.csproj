@@ -28,4 +28,6 @@
     <Folder Include="Filters\" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="R" /></VisualStudio></ProjectExtensions>
+
 </Project>
