@@ -143,6 +143,56 @@ public class DiagnosesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get a diagnosis document with its extracted diagnoses
+    /// </summary>
+    /// <param name="documentId">Document ID</param>
+    /// <returns>Diagnosis document with diagnoses</returns>
+    [HttpGet("documents/{documentId}")]
+    public async Task<ActionResult<DiagnosisDocumentWithDiagnosesDto>> GetDiagnosisDocumentWithDiagnoses(int documentId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<IDiagnosisExtractionService>();
+            var document = await extractionService.GetDiagnosisDocumentWithDiagnosesAsync(userId, documentId);
+            
+            if (document == null)
+            {
+                return NotFound(new { error = _localizer["DiagnosisDocumentNotFound"] });
+            }
+
+            return Ok(document);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnosisDocument"] });
+        }
+    }
+
+    /// <summary>
+    /// Get paginated diagnosis documents for the authenticated user
+    /// </summary>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of diagnosis documents</returns>
+    [HttpGet("documents")]
+    public async Task<ActionResult<PaginatedResponse<DiagnosisDocumentDto>>> GetDiagnosisDocuments(
+        [FromQuery] DiagnosisDocumentsQueryParameters parameters)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<IDiagnosisExtractionService>();
+            var documents = await extractionService.GetDiagnosisDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            
+            return Ok(documents);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnoses"] });
+        }
+    }
+
     private int GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

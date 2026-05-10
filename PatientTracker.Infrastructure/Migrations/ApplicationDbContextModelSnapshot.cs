@@ -36,6 +36,9 @@ namespace PatientTracker.Infrastructure.Migrations
                     b.Property<DateTime?>("DateDiagnosed")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DiagnosisDocumentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("DiagnosisName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -65,9 +68,82 @@ namespace PatientTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DiagnosisDocumentId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Diagnoses");
+                });
+
+            modelBuilder.Entity("PatientTracker.Domain.Entities.DiagnosisDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExtractedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExtractionError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExtractionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RawExtractionData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ThumbnailPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DiagnosisDocuments");
                 });
 
             modelBuilder.Entity("PatientTracker.Domain.Entities.Document", b =>
@@ -331,6 +407,9 @@ namespace PatientTracker.Infrastructure.Migrations
                     b.Property<bool>("IsCurrent")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("MedicationDocumentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -355,9 +434,82 @@ namespace PatientTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MedicationDocumentId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Medications");
+                });
+
+            modelBuilder.Entity("PatientTracker.Domain.Entities.MedicationDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExtractedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExtractionError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExtractionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RawExtractionData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ThumbnailPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MedicationDocuments");
                 });
 
             modelBuilder.Entity("PatientTracker.Domain.Entities.Profile", b =>
@@ -636,6 +788,15 @@ namespace PatientTracker.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("GeminiRequestsLastMinute")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GeminiRequestsToday")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastGeminiRequestTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -654,11 +815,36 @@ namespace PatientTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("PatientTracker.Domain.Entities.Diagnosis", b =>
                 {
+                    b.HasOne("PatientTracker.Domain.Entities.DiagnosisDocument", "DiagnosisDocument")
+                        .WithMany("Diagnoses")
+                        .HasForeignKey("DiagnosisDocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("PatientTracker.Domain.Entities.User", "User")
                         .WithMany("Diagnoses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DiagnosisDocument");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PatientTracker.Domain.Entities.DiagnosisDocument", b =>
+                {
+                    b.HasOne("PatientTracker.Domain.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("PatientTracker.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Document");
 
                     b.Navigation("User");
                 });
@@ -731,11 +917,36 @@ namespace PatientTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("PatientTracker.Domain.Entities.Medication", b =>
                 {
+                    b.HasOne("PatientTracker.Domain.Entities.MedicationDocument", "MedicationDocument")
+                        .WithMany("Medications")
+                        .HasForeignKey("MedicationDocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("PatientTracker.Domain.Entities.User", "User")
                         .WithMany("Medications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("MedicationDocument");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PatientTracker.Domain.Entities.MedicationDocument", b =>
+                {
+                    b.HasOne("PatientTracker.Domain.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("PatientTracker.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Document");
 
                     b.Navigation("User");
                 });
@@ -795,9 +1006,19 @@ namespace PatientTracker.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("PatientTracker.Domain.Entities.DiagnosisDocument", b =>
+                {
+                    b.Navigation("Diagnoses");
+                });
+
             modelBuilder.Entity("PatientTracker.Domain.Entities.LabTestDocument", b =>
                 {
                     b.Navigation("LabTests");
+                });
+
+            modelBuilder.Entity("PatientTracker.Domain.Entities.MedicationDocument", b =>
+                {
+                    b.Navigation("Medications");
                 });
 
             modelBuilder.Entity("PatientTracker.Domain.Entities.User", b =>

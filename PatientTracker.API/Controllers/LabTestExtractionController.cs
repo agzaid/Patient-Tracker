@@ -50,6 +50,31 @@ public class LabTestExtractionController : ControllerBase
     }
 
     /// <summary>
+    /// Upload and extract lab test results using Tesseract OCR
+    /// </summary>
+    /// <param name="request">Upload request with file</param>
+    /// <returns>Extraction status and results</returns>
+    [HttpPost("tesseract")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<LabTestExtractionResponse>> UploadAndExtractTesseract([FromForm] UploadLabTestDocumentRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var result = await _extractionService.UploadAndExtractTesseractAsync(userId, request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorUploadingDocument"] });
+        }
+    }
+
+    /// <summary>
     /// Get extraction status and results for a document
     /// </summary>
     /// <param name="documentId">Document ID</param>

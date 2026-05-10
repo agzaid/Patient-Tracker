@@ -17,6 +17,11 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
+    // Gemini usage tracking
+    public int GeminiRequestsToday { get; set; } = 0;
+    public DateTime? LastGeminiRequestTime { get; set; }
+    public int GeminiRequestsLastMinute { get; set; } = 0;
+    
     // Navigation properties
     public Profile? Profile { get; set; }
     public ICollection<Medication> Medications { get; set; } = new List<Medication>();

@@ -91,6 +91,14 @@ builder.Services.AddSwaggerGen(c =>
     // Handle enums as strings
     c.UseInlineDefinitionsForEnums();
 
+    // Ignore problematic properties
+    //c.IgnoreObsoleteProperties();
+    //c.IgnoreObsoleteActions();
+
+    //// Add filters for better error handling
+    //c.OperationFilter<PatientTracker.API.Filters.SwaggerOperationFilter>();
+    //c.SchemaFilter<PatientTracker.API.Filters.SwaggerSchemaFilter>();
+
     // Include XML Comments - temporarily disabled
     //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -101,7 +109,7 @@ builder.Services.AddSwaggerGen(c =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, o => o.EnableRetryOnFailure()));
 
 // JWT Authentication
 builder.Services.AddAuthentication("Bearer")
@@ -123,14 +131,25 @@ builder.Services.AddAuthentication("Bearer")
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>
+    options.AddPolicy("PatientTrackerPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8081")
-              .AllowAnyMethod()
+        policy.WithOrigins("https://sehty.org", "https://api.sehty.org", "http://localhost:8081")
               .AllowAnyHeader()
+              .AllowAnyMethod()
               .AllowCredentials();
     });
 });
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReactApp", policy =>
+//    {
+//        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8081")
+//              .AllowAnyMethod()
+//              .AllowAnyHeader()
+//              .AllowCredentials();
+//    });
+//});
 
 // Dependency Injection
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -146,8 +165,11 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 builder.Services.AddScoped<ILabTestExtractionService, LabTestExtractionService>();
+builder.Services.AddScoped<IMedicationExtractionService, MedicationExtractionService>();
+builder.Services.AddScoped<IDiagnosisExtractionService, DiagnosisExtractionService>();
 builder.Services.AddScoped<IDocumentChatService, DocumentChatService>();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
+builder.Services.AddScoped<IRateLimitingService, RateLimitingService>();
 
 // HttpClient for Gemini
 builder.Services.AddHttpClient<IGeminiService, GeminiService>(client =>
@@ -166,6 +188,8 @@ builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<ILabTestRepository, LabTestRepository>();
 builder.Services.AddScoped<IRadiologyRepository, RadiologyRepository>();
 builder.Services.AddScoped<ILabTestDocumentRepository, LabTestDocumentRepository>();
+builder.Services.AddScoped<IMedicationDocumentRepository, MedicationDocumentRepository>();
+builder.Services.AddScoped<IDiagnosisDocumentRepository, DiagnosisDocumentRepository>();
 builder.Services.AddScoped<IDocumentChatMessageRepository, DocumentChatMessageRepository>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
@@ -175,18 +199,23 @@ builder.Services.AddScoped<ISharedLinkRepository, SharedLinkRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Patient Tracker API v1");
+    // If you want swagger at the root (site3.rtempurl.com/), keep this:
+    c.RoutePrefix = string.Empty;
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Patient Tracker API v1");
-        c.RoutePrefix = string.Empty; // Sets Swagger UI at app's root
-    });
 }
 
 app.UseHttpsRedirection();
+
+// CORS - must be early in the pipeline
+app.UseCors("PatientTrackerPolicy");
 
 // Configure localization
 app.UseRequestLocalization(localizationOptions);
@@ -194,8 +223,6 @@ app.UseRequestLocalization(localizationOptions);
 // Custom middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
-
-app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

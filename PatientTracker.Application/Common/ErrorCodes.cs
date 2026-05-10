@@ -58,5 +58,6 @@ public enum ErrorCodes
     UnexpectedError = 5001,
     ServiceUnavailable = 5002,
     FileNotFound = 5003,
-    ConfigurationError = 5004
+    ConfigurationError = 5004,
+    RateLimitExceeded = 5005
 }

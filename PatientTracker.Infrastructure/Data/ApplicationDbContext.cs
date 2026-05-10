@@ -12,10 +12,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<Medication> Medications { get; set; }
+    public DbSet<MedicationDocument> MedicationDocuments { get; set; }
     public DbSet<LabTest> LabTests { get; set; }
     public DbSet<LabTestDocument> LabTestDocuments { get; set; }
     public DbSet<RadiologyScan> RadiologyScans { get; set; }
     public DbSet<Diagnosis> Diagnoses { get; set; }
+    public DbSet<DiagnosisDocument> DiagnosisDocuments { get; set; }
     public DbSet<Surgery> Surgeries { get; set; }
     public DbSet<SharedLink> SharedLinks { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -53,7 +55,30 @@ public class ApplicationDbContext : DbContext
                   .WithMany(u => u.Medications)
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.MedicationDocument)
+                  .WithMany(d => d.Medications)
+                  .HasForeignKey(e => e.MedicationDocumentId)
+                  .OnDelete(DeleteBehavior.NoAction);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+        });
+
+        // MedicationDocument configuration
+        modelBuilder.Entity<MedicationDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(e => e.Document)
+                  .WithMany()
+                  .HasForeignKey(e => e.DocumentId)
+                  .OnDelete(DeleteBehavior.NoAction);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ThumbnailPath).HasMaxLength(500);
         });
 
         // LabTestDocument configuration
@@ -109,7 +134,30 @@ public class ApplicationDbContext : DbContext
                   .WithMany(u => u.Diagnoses)
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.DiagnosisDocument)
+                  .WithMany(d => d.Diagnoses)
+                  .HasForeignKey(e => e.DiagnosisDocumentId)
+                  .OnDelete(DeleteBehavior.NoAction);
             entity.Property(e => e.DiagnosisName).IsRequired().HasMaxLength(255);
+        });
+
+        // DiagnosisDocument configuration
+        modelBuilder.Entity<DiagnosisDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(e => e.Document)
+                  .WithMany()
+                  .HasForeignKey(e => e.DocumentId)
+                  .OnDelete(DeleteBehavior.NoAction);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ThumbnailPath).HasMaxLength(500);
         });
 
         // Surgery configuration

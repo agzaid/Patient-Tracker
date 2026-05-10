@@ -5,6 +5,7 @@ namespace PatientTracker.Application.Services;
 public interface ILabTestExtractionService
 {
     Task<LabTestExtractionResponse> UploadAndExtractAsync(int userId, UploadLabTestDocumentRequest request);
+    Task<LabTestExtractionResponse> UploadAndExtractTesseractAsync(int userId, UploadLabTestDocumentRequest request);
     Task<LabTestExtractionResponse> GetExtractionStatusAsync(int userId, int documentId);
     Task<LabTestExtractionResponse> RetryExtractionAsync(int userId, int documentId);
     Task<List<LabTestDto>> UpdateExtractedTestsAsync(int userId, int documentId, List<UpdateExtractedLabTestRequest> updates);

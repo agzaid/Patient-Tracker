@@ -47,6 +47,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         _dbSet.Add(entity);
     }
 
+    public void AddRange(IEnumerable<T> entities)
+    {
+        _dbSet.AddRange(entities);
+    }
+
     public void Update(T entity)
     {
         // The entity is already tracked if it was fetched from the context

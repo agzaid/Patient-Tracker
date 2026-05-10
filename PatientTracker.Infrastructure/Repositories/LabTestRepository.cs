@@ -14,6 +14,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
     public async Task<IEnumerable<LabTest>> GetByUserIdAsync(int userId)
     {
         return await _context.LabTests
+            .AsNoTracking()
             .Where(l => l.UserId == userId)
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
     public async Task<IEnumerable<LabTest>> GetByUserIdAsync(int userId, int page, int pageSize)
     {
         return await _context.LabTests
+            .AsNoTracking()
             .Where(l => l.UserId == userId)
             .OrderByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -31,7 +33,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
 
     public async Task<IEnumerable<LabTest>> GetByUserIdAsync(int userId, int page, int pageSize, string? search)
     {
-        var query = _context.LabTests.Where(l => l.UserId == userId);
+        var query = _context.LabTests.AsNoTracking().Where(l => l.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -76,6 +78,7 @@ public class LabTestRepository : GenericRepository<LabTest>, ILabTestRepository
     public async Task<IEnumerable<LabTest>> GetByDocumentIdAsync(int documentId)
     {
         return await _context.LabTests
+            .AsNoTracking()
             .Where(l => l.LabTestDocumentId == documentId)
             .OrderBy(l => l.TestName)
             .ToListAsync();

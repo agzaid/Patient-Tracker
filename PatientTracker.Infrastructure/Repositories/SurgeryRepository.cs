@@ -14,6 +14,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
     public async Task<IEnumerable<Surgery>> GetByUserIdAsync(int userId)
     {
         return await _context.Surgeries
+            .AsNoTracking()
             .Where(s => s.UserId == userId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
     public async Task<IEnumerable<Surgery>> GetByUserIdAsync(int userId, int page, int pageSize)
     {
         return await _context.Surgeries
+            .AsNoTracking()
             .Where(s => s.UserId == userId)
             .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -31,7 +33,7 @@ public class SurgeryRepository : GenericRepository<Surgery>, ISurgeryRepository
 
     public async Task<IEnumerable<Surgery>> GetByUserIdAsync(int userId, int page, int pageSize, string? search)
     {
-        var query = _context.Surgeries.Where(s => s.UserId == userId);
+        var query = _context.Surgeries.AsNoTracking().Where(s => s.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

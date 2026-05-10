@@ -237,6 +237,22 @@
   <data name="LabTestNotFound" xml:space="preserve">
     <value>الفحص المخبري غير موجود</value>
   </data>
+  
+  <!-- Medication Document -->
+  <data name="MedicationDocumentNotFound" xml:space="preserve">
+    <value>وثيقة الدواء غير موجودة</value>
+  </data>
+  <data name="ErrorFetchingMedicationDocument" xml:space="preserve">
+    <value>خطأ في جلب وثيقة الدواء</value>
+  </data>
+  
+  <!-- Diagnosis Document -->
+  <data name="DiagnosisDocumentNotFound" xml:space="preserve">
+    <value>وثيقة التشخيص غير موجودة</value>
+  </data>
+  <data name="ErrorFetchingDiagnosisDocument" xml:space="preserve">
+    <value>خطأ في جلب وثيقة التشخيص</value>
+  </data>
   <data name="ErrorCreatingLabTest" xml:space="preserve">
     <value>حدث خطأ أثناء إنشاء الفحص المخبري</value>
   </data>
@@ -391,5 +407,32 @@
   </data>
   <data name="ConfigurationError" xml:space="preserve">
     <value>حدث خطأ في التكوين</value>
+  </data>
+  <data name="RateLimitExceeded" xml:space="preserve">
+    <value>لقد تجاوزت حد استخدام واجهة برمجة تطبيقات Gemini. الحد الأقصى 5 طلبات يومياً وطلبان في الدقيقة</value>
+  </data>
+  <data name="NoFileProvided" xml:space="preserve">
+    <value>لم يتم توفير ملف</value>
+  </data>
+  <data name="FileSizeExceedsMaximum" xml:space="preserve">
+    <value>حجم الملف يتجاوز الحد الأقصى المسموح به وهو {0} ميجابايت</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>الملف مطلوب</value>
+  </data>
+  <data name="FileSizeExceeded" xml:space="preserve">
+    <value>تم تجاوز حجم الملف</value>
+  </data>
+  <data name="GeminiApiKeyNotConfigured" xml:space="preserve">
+    <value>مفتاح واجهة برمجة تطبيقات Gemini غير معين</value>
+  </data>
+  <data name="GeminiApiError" xml:space="preserve">
+    <value>خطأ في واجهة برمجة تطبيقات Gemini: {0}</value>
+  </data>
+  <data name="GeminiNoResponse" xml:space="preserve">
+    <value>لم تُرجع واجهة برمجة تطبيقات Gemini أي استجابة</value>
+  </data>
+  <data name="GeminiEmptyResponse" xml:space="preserve">
+    <value>أرجعت واجهة برمجة تطبيقات Gemini استجابة فارغة</value>
   </data>
 </root>

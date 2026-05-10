@@ -56,3 +56,21 @@ public enum LabTestExtractionStatus
     Failed = 3,
     ManuallyEdited = 4
 }
+
+public enum MedicationExtractionStatus
+{
+    Pending = 0,
+    Processing = 1,
+    Completed = 2,
+    Failed = 3,
+    ManuallyEdited = 4
+}
+
+public enum DiagnosisExtractionStatus
+{
+    Pending = 0,
+    Processing = 1,
+    Completed = 2,
+    Failed = 3,
+    ManuallyEdited = 4
+}

@@ -6,6 +6,7 @@ public class Diagnosis
 {
     public int Id { get; set; }
     public int UserId { get; set; }
+    public int? DiagnosisDocumentId { get; set; }
     
     [Required]
     [MaxLength(255)]
@@ -28,6 +29,7 @@ public class Diagnosis
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    // Navigation property
+    // Navigation properties
     public User User { get; set; } = null!;
+    public DiagnosisDocument? DiagnosisDocument { get; set; }
 }

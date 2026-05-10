@@ -14,6 +14,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
     public async Task<IEnumerable<Diagnosis>> GetByUserIdAsync(int userId)
     {
         return await _context.Diagnoses
+            .AsNoTracking()
             .Where(d => d.UserId == userId)
             .OrderByDescending(d => d.CreatedAt)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
     public async Task<IEnumerable<Diagnosis>> GetByUserIdAsync(int userId, int page, int pageSize)
     {
         return await _context.Diagnoses
+            .AsNoTracking()
             .Where(d => d.UserId == userId)
             .OrderByDescending(d => d.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -31,7 +33,7 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
 
     public async Task<IEnumerable<Diagnosis>> GetByUserIdAsync(int userId, int page, int pageSize, string? search)
     {
-        var query = _context.Diagnoses.Where(d => d.UserId == userId);
+        var query = _context.Diagnoses.AsNoTracking().Where(d => d.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -71,5 +73,12 @@ public class DiagnosisRepository : GenericRepository<Diagnosis>, IDiagnosisRepos
         }
 
         return await query.CountAsync();
+    }
+
+    public async Task<IEnumerable<Diagnosis>> GetByDiagnosisDocumentIdAsync(int diagnosisDocumentId)
+    {
+        return await _context.Diagnoses
+            .Where(d => d.DiagnosisDocumentId == diagnosisDocumentId)
+            .ToListAsync();
     }
 }

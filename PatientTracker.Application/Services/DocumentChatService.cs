@@ -69,7 +69,7 @@ public class DocumentChatService : IDocumentChatService
             var prompt = BuildChatPrompt(history, request.Message);
 
             // Get AI response
-            var aiResponse = await _geminiService.GenerateResponseAsync(prompt, base64Content, document.ContentType);
+            var aiResponse = await _geminiService.GenerateResponseAsync(prompt, userId, base64Content, document.ContentType);
 
             // Save chat message
             var chatMessage = new DocumentChatMessage

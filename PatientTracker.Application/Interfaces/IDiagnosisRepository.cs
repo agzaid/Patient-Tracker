@@ -9,4 +9,5 @@ public interface IDiagnosisRepository : IGenericRepository<Diagnosis>
     Task<IEnumerable<Diagnosis>> GetByUserIdAsync(int userId, int page, int pageSize, string? search);
     Task<int> CountByUserIdAsync(int userId);
     Task<int> CountByUserIdAsync(int userId, string? search);
+    Task<IEnumerable<Diagnosis>> GetByDiagnosisDocumentIdAsync(int diagnosisDocumentId);
 }

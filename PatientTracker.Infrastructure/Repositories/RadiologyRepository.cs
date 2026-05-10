@@ -14,6 +14,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
     public async Task<IEnumerable<RadiologyScan>> GetByUserIdAsync(int userId)
     {
         return await _context.RadiologyScans
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
     public async Task<IEnumerable<RadiologyScan>> GetByUserIdAsync(int userId, int page, int pageSize)
     {
         return await _context.RadiologyScans
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -31,7 +33,7 @@ public class RadiologyRepository : GenericRepository<RadiologyScan>, IRadiologyR
 
     public async Task<IEnumerable<RadiologyScan>> GetByUserIdAsync(int userId, int page, int pageSize, string? search)
     {
-        var query = _context.RadiologyScans.Where(r => r.UserId == userId);
+        var query = _context.RadiologyScans.AsNoTracking().Where(r => r.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

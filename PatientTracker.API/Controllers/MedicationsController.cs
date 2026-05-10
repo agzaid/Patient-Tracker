@@ -143,6 +143,56 @@ public class MedicationsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get a medication document with its extracted medications
+    /// </summary>
+    /// <param name="documentId">Document ID</param>
+    /// <returns>Medication document with medications</returns>
+    [HttpGet("documents/{documentId}")]
+    public async Task<ActionResult<MedicationDocumentWithMedicationsDto>> GetMedicationDocumentWithMedications(int documentId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
+            var document = await extractionService.GetMedicationDocumentWithMedicationsAsync(userId, documentId);
+            
+            if (document == null)
+            {
+                return NotFound(new { error = _localizer["MedicationDocumentNotFound"] });
+            }
+
+            return Ok(document);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingMedicationDocument"] });
+        }
+    }
+
+    /// <summary>
+    /// Get paginated medication documents for the authenticated user
+    /// </summary>
+    /// <param name="parameters">Query parameters for pagination and search</param>
+    /// <returns>Paginated list of medication documents</returns>
+    [HttpGet("documents")]
+    public async Task<ActionResult<PaginatedResponse<MedicationDocumentDto>>> GetMedicationDocuments(
+        [FromQuery] MedicationDocumentsQueryParameters parameters)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
+            var documents = await extractionService.GetMedicationDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+            
+            return Ok(documents);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorFetchingMedications"] });
+        }
+    }
+
     private int GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

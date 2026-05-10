@@ -237,6 +237,22 @@
   <data name="LabTestNotFound" xml:space="preserve">
     <value>Lab test not found</value>
   </data>
+  
+  <!-- Medication Document -->
+  <data name="MedicationDocumentNotFound" xml:space="preserve">
+    <value>Medication document not found</value>
+  </data>
+  <data name="ErrorFetchingMedicationDocument" xml:space="preserve">
+    <value>Error fetching medication document</value>
+  </data>
+  
+  <!-- Diagnosis Document -->
+  <data name="DiagnosisDocumentNotFound" xml:space="preserve">
+    <value>Diagnosis document not found</value>
+  </data>
+  <data name="ErrorFetchingDiagnosisDocument" xml:space="preserve">
+    <value>Error fetching diagnosis document</value>
+  </data>
   <data name="ErrorCreatingLabTest" xml:space="preserve">
     <value>An error occurred while creating lab test</value>
   </data>
@@ -391,5 +407,32 @@
   </data>
   <data name="ConfigurationError" xml:space="preserve">
     <value>A configuration error occurred</value>
+  </data>
+  <data name="RateLimitExceeded" xml:space="preserve">
+    <value>You have exceeded your Gemini API usage limit. Maximum 5 requests per day and 2 requests per minute</value>
+  </data>
+  <data name="NoFileProvided" xml:space="preserve">
+    <value>No file provided</value>
+  </data>
+  <data name="FileSizeExceedsMaximum" xml:space="preserve">
+    <value>File size exceeds maximum allowed limit of {0}MB</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>File is required</value>
+  </data>
+  <data name="FileSizeExceeded" xml:space="preserve">
+    <value>File size exceeded</value>
+  </data>
+  <data name="GeminiApiKeyNotConfigured" xml:space="preserve">
+    <value>Gemini API key is not configured</value>
+  </data>
+  <data name="GeminiApiError" xml:space="preserve">
+    <value>Gemini API error: {0}</value>
+  </data>
+  <data name="GeminiNoResponse" xml:space="preserve">
+    <value>Gemini API returned no response</value>
+  </data>
+  <data name="GeminiEmptyResponse" xml:space="preserve">
+    <value>Gemini API returned an empty response</value>
   </data>
 </root>
