@@ -17,7 +17,7 @@ public class MedicationDocumentRepository : IMedicationDocumentRepository
     public async Task<MedicationDocument?> GetByIdAsync(int id)
     {
         return await _context.MedicationDocuments
-            .FirstOrDefaultAsync(d => d.DocumentId == id);
+            .FirstOrDefaultAsync(d => d.Id == id);
     }
 
     public async Task<IEnumerable<MedicationDocument>> GetByUserIdAsync(int userId)

@@ -29,7 +29,7 @@ public class GeminiService : IGeminiService
         _localizer = localizer;
         _apiKey = _configuration["Gemini:ApiKey"] ?? throw new BusinessException(ErrorCodes.ConfigurationError, _localizer["GeminiApiKeyNotConfigured"].Value);
         _rateLimitingService = rateLimitingService;
-        
+
         // Configure retry policy with exponential backoff
         _retryPolicy = Policy<HttpResponseMessage>
             .Handle<HttpRequestException>()
@@ -39,7 +39,7 @@ public class GeminiService : IGeminiService
                 sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                 onRetry: (outcome, timespan, retryAttempt, context) =>
                 {
-                    _logger.LogWarning("Retry {RetryAttempt} after {Delay}ms due to: {Error}", 
+                    _logger.LogWarning("Retry {RetryAttempt} after {Delay}ms due to: {Error}",
                         retryAttempt, timespan.TotalMilliseconds, outcome.Exception?.Message ?? "Non-success status code");
                 });
     }
@@ -49,13 +49,13 @@ public class GeminiService : IGeminiService
         try
         {
             _logger.LogInformation("Starting lab test extraction for file: {FileName}", fileName);
-            
+
             // Check rate limit
             if (!await _rateLimitingService.CanMakeGeminiRequestAsync(userId))
             {
                 throw new BusinessException(ErrorCodes.RateLimitExceeded, "You have exceeded your Gemini API usage limit. Maximum 5 requests per day and 2 requests per minute.");
             }
-            
+
             // Convert file to base64
             using var memoryStream = new MemoryStream();
             await fileStream.CopyToAsync(memoryStream);
@@ -109,8 +109,7 @@ public class GeminiService : IGeminiService
             // Make the request with retry policy
             // Use the current Gemini 3 Flash preview model
             var response = await _retryPolicy.ExecuteAsync(() =>
-                _httpClient.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={_apiKey}", content));
-
+                            _httpClient.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={_apiKey}", content));
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -124,14 +123,14 @@ public class GeminiService : IGeminiService
             // Parse the response
             using var jsonDoc = JsonDocument.Parse(responseContent);
             var candidates = jsonDoc.RootElement.GetProperty("candidates");
-            
+
             if (candidates.GetArrayLength() == 0)
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiNoResponse"].Value);
             }
 
             var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiEmptyResponse"].Value);
@@ -167,13 +166,13 @@ public class GeminiService : IGeminiService
         try
         {
             _logger.LogInformation("Starting medication extraction for file: {FileName}", fileName);
-            
+
             // Check rate limit
             if (!await _rateLimitingService.CanMakeGeminiRequestAsync(userId))
             {
                 throw new BusinessException(ErrorCodes.RateLimitExceeded, "You have exceeded your Gemini API usage limit. Maximum 5 requests per day and 2 requests per minute.");
             }
-            
+
             // Convert file to base64
             using var memoryStream = new MemoryStream();
             await fileStream.CopyToAsync(memoryStream);
@@ -242,14 +241,14 @@ public class GeminiService : IGeminiService
             // Parse the response
             using var jsonDoc = JsonDocument.Parse(responseContent);
             var candidates = jsonDoc.RootElement.GetProperty("candidates");
-            
+
             if (candidates.GetArrayLength() == 0)
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiNoResponse"].Value);
             }
 
             var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiEmptyResponse"].Value);
@@ -285,13 +284,13 @@ public class GeminiService : IGeminiService
         try
         {
             _logger.LogInformation("Starting diagnosis extraction for file: {FileName}", fileName);
-            
+
             // Check rate limit
             if (!await _rateLimitingService.CanMakeGeminiRequestAsync(userId))
             {
                 throw new BusinessException(ErrorCodes.RateLimitExceeded, "You have exceeded your Gemini API usage limit. Maximum 5 requests per day and 2 requests per minute.");
             }
-            
+
             // Convert file to base64
             using var memoryStream = new MemoryStream();
             await fileStream.CopyToAsync(memoryStream);
@@ -360,14 +359,14 @@ public class GeminiService : IGeminiService
             // Parse the response
             using var jsonDoc = JsonDocument.Parse(responseContent);
             var candidates = jsonDoc.RootElement.GetProperty("candidates");
-            
+
             if (candidates.GetArrayLength() == 0)
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiNoResponse"].Value);
             }
 
             var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 throw new BusinessException(ErrorCodes.ServiceUnavailable, _localizer["GeminiEmptyResponse"].Value);

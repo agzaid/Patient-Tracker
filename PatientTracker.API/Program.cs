@@ -133,7 +133,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("PatientTrackerPolicy", policy =>
     {
-        policy.WithOrigins("https://sehty.org", "https://api.sehty.org", "http://localhost:8081")
+        policy.WithOrigins("https://sehty.org", "http://sehty.org", "https://api.sehty.org", "http://localhost:8081")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

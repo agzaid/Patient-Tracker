@@ -1,10 +1,10 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
+using PatientTracker.Application.Common;
 using PatientTracker.Application.DTOs;
-using PatientTracker.Application.Services;
 using PatientTracker.Application.Resources;
-using FluentValidation;
+using PatientTracker.Application.Services;
 
 namespace PatientTracker.API.Controllers;
 
@@ -53,6 +53,10 @@ public class AuthController : ControllerBase
         {
             var response = await _authService.RegisterAsync(request);
             return Ok(response);
+        }
+        catch (BusinessException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -118,6 +122,10 @@ public class AuthController : ControllerBase
             var response = await _authService.RefreshTokenAsync(request);
             return Ok(response);
         }
+        catch (PatientTracker.Application.Common.BusinessException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
@@ -141,6 +149,10 @@ public class AuthController : ControllerBase
         {
             await _authService.LogoutAsync(request.RefreshToken);
             return Ok(new { message = _localizer["LoggedOutSuccessfully"] });
+        }
+        catch (PatientTracker.Application.Common.BusinessException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
         {
