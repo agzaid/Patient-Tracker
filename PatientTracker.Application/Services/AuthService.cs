@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using PatientTracker.Application.Common;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
 using BCrypt.Net;
 
@@ -13,13 +15,15 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IConfiguration _configuration;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration, IUnitOfWork unitOfWork)
+    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration, IUnitOfWork unitOfWork, IStringLocalizer<ErrorMessages> localizer)
     {
         _userRepository = userRepository;
         _jwtService = jwtService;
         _configuration = configuration;
         _unitOfWork = unitOfWork;
+        _localizer = localizer;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -28,7 +32,7 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser != null)
         {
-            throw new BusinessException(ErrorCodes.UserAlreadyExists);
+            throw new BusinessException(ErrorCodes.UserAlreadyExists, _localizer["UserAlreadyExists"]);
         }
 
         // Create new user
@@ -83,7 +87,7 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            throw new BusinessException(ErrorCodes.InvalidCredentials, "Invalid email or password");
+            throw new BusinessException(ErrorCodes.InvalidCredentials, _localizer["InvalidCredentials"]);
         }
 
         // Generate tokens
@@ -127,20 +131,20 @@ public class AuthService : IAuthService
         var refreshToken = await _userRepository.GetRefreshTokenAsync(request.RefreshToken);
         if (refreshToken == null || refreshToken.IsRevoked || refreshToken.IsUsed || refreshToken.ExpiresAt < DateTime.UtcNow)
         {
-            throw new BusinessException(ErrorCodes.InvalidToken);
+            throw new BusinessException(ErrorCodes.InvalidToken, _localizer["InvalidToken"]);
         }
 
         var principal = _jwtService.GetPrincipalFromExpiredToken(refreshToken.Token);
         if (principal == null)
         {
-            throw new BusinessException(ErrorCodes.InvalidToken);
+            throw new BusinessException(ErrorCodes.InvalidToken, _localizer["InvalidToken"]);
         }
 
         var userId = int.Parse(principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new BusinessException(ErrorCodes.UserNotFound);
+            throw new BusinessException(ErrorCodes.UserNotFound, _localizer["UserNotFound"]);
         }
 
         // Mark the refresh token as used
