@@ -14,23 +14,35 @@ namespace PatientTracker.Application.Services;
 
 public class MedicationExtractionService : IMedicationExtractionService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGeminiService _geminiService;
+    private readonly IMedicationDocumentRepository _medicationDocumentRepository;
+    private readonly IMedicationRepository _medicationRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
     private readonly ILogger<MedicationExtractionService> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IGeminiService _geminiService;
+    private readonly IDocumentService _documentService;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
 
     public MedicationExtractionService(
-        IServiceScopeFactory scopeFactory,
-        IGeminiService geminiService,
+        IMedicationDocumentRepository medicationDocumentRepository,
+        IMedicationRepository medicationRepository,
+        IUnitOfWork unitOfWork,
         IConfiguration configuration,
         ILogger<MedicationExtractionService> logger,
+        IServiceScopeFactory scopeFactory,
+        IGeminiService geminiService,
+        IDocumentService documentService,
         IStringLocalizer<ErrorMessages> localizer)
     {
-        _scopeFactory = scopeFactory;
-        _geminiService = geminiService;
+        _medicationDocumentRepository = medicationDocumentRepository;
+        _medicationRepository = medicationRepository;
+        _unitOfWork = unitOfWork;
         _configuration = configuration;
         _logger = logger;
+        _scopeFactory = scopeFactory;
+        _geminiService = geminiService;
+        _documentService = documentService;
         _localizer = localizer;
     }
 
@@ -57,26 +69,16 @@ public class MedicationExtractionService : IMedicationExtractionService
                 throw new InvalidOperationException(_localizer["FileSizeExceeded"]);
             }
 
-            // Save file
-            var uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
-            var userFolderPath = Path.Combine(uploadsPath, "medications", userId.ToString());
-            Directory.CreateDirectory(userFolderPath);
-
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.File.FileName)}";
-            var filePath = Path.Combine(userFolderPath, fileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await request.File.CopyToAsync(fileStream);
-            }
+            // Save file using centralized document service
+            var filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"medications/{userId}");
 
             // Create document record
             var document = new Document
             {
                 UserId = userId,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath
             };
@@ -89,9 +91,9 @@ public class MedicationExtractionService : IMedicationExtractionService
             {
                 UserId = userId,
                 DocumentId = document.Id,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 ExtractionStatus = MedicationExtractionStatus.Pending

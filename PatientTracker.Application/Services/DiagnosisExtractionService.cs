@@ -19,19 +19,22 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
     private readonly IConfiguration _configuration;
     private readonly ILogger<DiagnosisExtractionService> _logger;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
+    private readonly IDocumentService _documentService;
 
     public DiagnosisExtractionService(
         IServiceScopeFactory scopeFactory,
         IGeminiService geminiService,
         IConfiguration configuration,
         ILogger<DiagnosisExtractionService> logger,
-        IStringLocalizer<ErrorMessages> localizer)
+        IStringLocalizer<ErrorMessages> localizer,
+        IDocumentService documentService)
     {
         _scopeFactory = scopeFactory;
         _geminiService = geminiService;
         _configuration = configuration;
         _logger = logger;
         _localizer = localizer;
+        _documentService = documentService;
     }
 
     public async Task<DiagnosisExtractionResponse> UploadAndExtractAsync(int userId, UploadDiagnosisDocumentRequest request)
@@ -56,24 +59,15 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 throw new InvalidOperationException(_localizer["FileSizeExceeded"]);
             }
 
-            var uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
-            var userFolderPath = Path.Combine(uploadsPath, "diagnoses", userId.ToString());
-            Directory.CreateDirectory(userFolderPath);
-
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.File.FileName)}";
-            var filePath = Path.Combine(userFolderPath, fileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await request.File.CopyToAsync(fileStream);
-            }
+            // Save file using centralized document service
+            var filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"diagnoses/{userId}");
 
             var document = new Document
             {
                 UserId = userId,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath
             };
@@ -85,9 +79,9 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
             {
                 UserId = userId,
                 DocumentId = document.Id,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 ExtractionStatus = DiagnosisExtractionStatus.Pending

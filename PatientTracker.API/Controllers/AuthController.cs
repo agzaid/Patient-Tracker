@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (PatientTracker.Application.Common.BusinessException ex)
+        catch (BusinessException ex)
         {
             return BadRequest(new { error = ex.Message });
         }
@@ -122,7 +122,7 @@ public class AuthController : ControllerBase
             var response = await _authService.RefreshTokenAsync(request);
             return Ok(response);
         }
-        catch (PatientTracker.Application.Common.BusinessException ex)
+        catch (BusinessException ex)
         {
             return BadRequest(new { error = ex.Message });
         }
@@ -150,7 +150,7 @@ public class AuthController : ControllerBase
             await _authService.LogoutAsync(request.RefreshToken);
             return Ok(new { message = _localizer["LoggedOutSuccessfully"] });
         }
-        catch (PatientTracker.Application.Common.BusinessException ex)
+        catch (BusinessException ex)
         {
             return BadRequest(new { error = ex.Message });
         }

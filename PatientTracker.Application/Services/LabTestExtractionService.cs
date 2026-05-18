@@ -19,19 +19,22 @@ public class LabTestExtractionService : ILabTestExtractionService
     private readonly IConfiguration _configuration;
     private readonly ILogger<LabTestExtractionService> _logger;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
+    private readonly IDocumentService _documentService;
 
     public LabTestExtractionService(
         IServiceScopeFactory scopeFactory,
         IGeminiService geminiService,
         IConfiguration configuration,
         ILogger<LabTestExtractionService> logger,
-        IStringLocalizer<ErrorMessages> localizer)
+        IStringLocalizer<ErrorMessages> localizer,
+        IDocumentService documentService)
     {
         _scopeFactory = scopeFactory;
         _geminiService = geminiService;
         _configuration = configuration;
         _logger = logger;
         _localizer = localizer;
+        _documentService = documentService;
     }
 
     public async Task<LabTestExtractionResponse> UploadAndExtractAsync(int userId, UploadLabTestDocumentRequest request)
@@ -58,30 +61,16 @@ public class LabTestExtractionService : ILabTestExtractionService
                 throw new ValidationException(new Dictionary<string, string[]> { { "FileSize", new[] { string.Format(_localizer["FileSizeExceedsMaximum"].Value, maxSize / (1024 * 1024)) } } });
             }
 
-            // Create user folder structure like DocumentService
-            var userFolder = userId.ToString();
-            var documentTypeFolder = "lab-reports"; // Lab test documents are lab reports
-            var fullUserFolder = Path.Combine(userFolder, documentTypeFolder);
-            
-            // Save the file
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.File.FileName)}";
-            var uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
-            var userDirectory = Path.Combine(uploadsPath, fullUserFolder);
-            var filePath = Path.Combine(userDirectory, fileName);
-            
-            Directory.CreateDirectory(userDirectory);
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await request.File.CopyToAsync(fileStream);
-            }
+            // Save file using centralized document service
+            var filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"lab-reports/{userId}");
 
             // Create Document entity first
             var document = new Document
             {
                 UserId = userId,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 DocumentType = PatientTracker.Domain.Enums.DocumentType.LabReport,
@@ -97,9 +86,9 @@ public class LabTestExtractionService : ILabTestExtractionService
             {
                 UserId = userId,
                 DocumentId = document.Id,
-                FileName = fileName,
+                FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = request.File.ContentType,
+                ContentType = "image/webp",
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 ExtractionStatus = LabTestExtractionStatus.Pending

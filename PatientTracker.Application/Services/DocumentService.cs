@@ -7,6 +7,8 @@ using PatientTracker.Application.Interfaces;
 using PatientTracker.Application.Resources;
 using PatientTracker.Domain.Entities;
 using PatientTracker.Domain.Enums;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace PatientTracker.Application.Services;
 
@@ -18,6 +20,7 @@ public interface IDocumentService
     Task<bool> DeleteDocumentAsync(int documentId, int userId);
     Task<DocumentDto?> GetDocumentAsync(int documentId, int userId);
     Task<DocumentDto?> GetDocumentForSharedLinkAsync(int documentId);
+    Task<string> SaveOptimizedImageAsync(IFormFile file, string folder);
 }
 
 public class DocumentService : IDocumentService
@@ -265,5 +268,34 @@ public class DocumentService : IDocumentService
             CreatedAt = document.CreatedAt,
             UpdatedAt = document.UpdatedAt
         };
+    }
+
+    public async Task<string> SaveOptimizedImageAsync(IFormFile file, string folder)
+    {
+        if (file == null || file.Length == 0)
+            throw new ArgumentException("Invalid image file");
+
+        string uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
+        string uploadDir = Path.Combine(uploadsPath, folder);
+
+        if (!Directory.Exists(uploadDir))
+            Directory.CreateDirectory(uploadDir);
+
+        // Generate unique file name
+        string fileName = $"{Guid.NewGuid()}.webp";
+        string filePath = Path.Combine(uploadDir, fileName);
+
+        using var image = await SixLabors.ImageSharp.Image.LoadAsync(file.OpenReadStream());
+
+        // Resize if bigger than 1200px wide
+        if (image.Width > 1200)
+        {
+            image.Mutate(x => x.Resize(800, 600)); // fixed size resize
+        }
+
+        // Save as WebP (smaller & faster than JPG/PNG)
+        await image.SaveAsWebpAsync(filePath);
+
+        return filePath;
     }
 }
