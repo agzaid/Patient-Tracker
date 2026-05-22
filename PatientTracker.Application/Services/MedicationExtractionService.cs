@@ -69,8 +69,31 @@ public class MedicationExtractionService : IMedicationExtractionService
                 throw new InvalidOperationException(_localizer["FileSizeExceeded"]);
             }
 
-            // Save file using centralized document service
-            var filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"medications/{userId}");
+            // Check file type and handle accordingly
+            var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+            var isImage = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" }.Contains(extension);
+            var isDocument = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt" }.Contains(extension);
+
+            if (!isImage && !isDocument)
+            {
+                throw new InvalidOperationException(_localizer["UnsupportedFileType"]);
+            }
+
+            string filePath;
+            string contentType;
+
+            if (isImage)
+            {
+                // Save and optimize image
+                filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"medications/{userId}");
+                contentType = "image/webp";
+            }
+            else
+            {
+                // Save document as-is
+                filePath = await _documentService.SaveDocumentAsync(request.File, $"medications/{userId}");
+                contentType = request.File.ContentType;
+            }
 
             // Create document record
             var document = new Document
@@ -78,7 +101,7 @@ public class MedicationExtractionService : IMedicationExtractionService
                 UserId = userId,
                 FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = "image/webp",
+                ContentType = contentType,
                 FileSize = request.File.Length,
                 FilePath = filePath
             };
@@ -93,7 +116,7 @@ public class MedicationExtractionService : IMedicationExtractionService
                 DocumentId = document.Id,
                 FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = "image/webp",
+                ContentType = contentType,
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 ExtractionStatus = MedicationExtractionStatus.Pending

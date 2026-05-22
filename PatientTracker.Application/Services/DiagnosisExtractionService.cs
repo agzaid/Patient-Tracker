@@ -59,15 +59,38 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 throw new InvalidOperationException(_localizer["FileSizeExceeded"]);
             }
 
-            // Save file using centralized document service
-            var filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"diagnoses/{userId}");
+            // Check file type and handle accordingly
+            var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+            var isImage = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" }.Contains(extension);
+            var isDocument = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt" }.Contains(extension);
+
+            if (!isImage && !isDocument)
+            {
+                throw new InvalidOperationException(_localizer["UnsupportedFileType"]);
+            }
+
+            string filePath;
+            string contentType;
+
+            if (isImage)
+            {
+                // Save and optimize image
+                filePath = await _documentService.SaveOptimizedImageAsync(request.File, $"diagnoses/{userId}");
+                contentType = "image/webp";
+            }
+            else
+            {
+                // Save document as-is
+                filePath = await _documentService.SaveDocumentAsync(request.File, $"diagnoses/{userId}");
+                contentType = request.File.ContentType;
+            }
 
             var document = new Document
             {
                 UserId = userId,
                 FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = "image/webp",
+                ContentType = contentType,
                 FileSize = request.File.Length,
                 FilePath = filePath
             };
@@ -81,7 +104,7 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 DocumentId = document.Id,
                 FileName = Path.GetFileName(filePath),
                 OriginalFileName = request.File.FileName,
-                ContentType = "image/webp",
+                ContentType = contentType,
                 FileSize = request.File.Length,
                 FilePath = filePath,
                 ExtractionStatus = DiagnosisExtractionStatus.Pending

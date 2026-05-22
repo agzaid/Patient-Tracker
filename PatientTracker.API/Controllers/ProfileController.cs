@@ -22,10 +22,6 @@ public class ProfileController : ControllerBase
         _localizer = localizer;
     }
 
-    /// <summary>
-    /// Get user profile
-    /// </summary>
-    /// <returns>User profile information</returns>
     [HttpGet]
     public async Task<ActionResult<ProfileDto>> GetProfile()
     {
@@ -40,11 +36,6 @@ public class ProfileController : ControllerBase
         return Ok(profile);
     }
 
-    /// <summary>
-    /// Create user profile
-    /// </summary>
-    /// <param name="request">Profile creation request</param>
-    /// <returns>Created profile</returns>
     [HttpPost]
     public async Task<ActionResult<ProfileDto>> CreateProfile([FromBody] CreateProfileRequest request)
     {
@@ -64,11 +55,6 @@ public class ProfileController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Update user profile
-    /// </summary>
-    /// <param name="request">Profile update request</param>
-    /// <returns>Updated profile</returns>
     [HttpPut]
     public async Task<ActionResult<ProfileDto>> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
@@ -88,10 +74,6 @@ public class ProfileController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Delete user profile
-    /// </summary>
-    /// <returns>Delete result</returns>
     [HttpDelete]
     public async Task<IActionResult> DeleteProfile()
     {

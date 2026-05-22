@@ -87,6 +87,12 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>تم رفض الوصول. ليس لديك إذن لتنفيذ هذا الإجراء</value>
   </data>
+  <data name="ErrorDuringPasswordReset" xml:space="preserve">
+    <value>خطأ أثناء إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="PasswordResetEmailSent" xml:space="preserve">
+    <value>إذا كان هناك حساب بهذا البريد الإلكتروني، فقد تم إرسال رابط إعادة تعيين كلمة المرور</value>
+  </data>
   <data name="ErrorDuringRegistration" xml:space="preserve">
     <value>حدث خطأ أثناء التسجيل</value>
   </data>

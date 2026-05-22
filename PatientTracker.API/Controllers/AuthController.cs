@@ -35,11 +35,6 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Register a new user
-    /// </summary>
-    /// <param name="request">Registration details</param>
-    /// <returns>Authentication response with tokens</returns>
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
     {
@@ -69,11 +64,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Login user
-    /// </summary>
-    /// <param name="request">Login credentials</param>
-    /// <returns>Authentication response with tokens</returns>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
@@ -103,11 +93,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Refresh access token
-    /// </summary>
-    /// <param name="request">Refresh token request</param>
-    /// <returns>New authentication response</returns>
     [HttpPost("refresh")]
     public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
     {
@@ -137,11 +122,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Logout user
-    /// </summary>
-    /// <param name="request">Refresh token to revoke</param>
-    /// <returns>Logout result</returns>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
     {
@@ -158,6 +138,53 @@ public class AuthController : ControllerBase
         {
             _logger.LogError(ex, "Error during logout");
             return StatusCode(500, new { error = _localizer["ErrorDuringLogout"] });
+        }
+    }
+
+    /// <summary>
+    /// Request password reset email
+    /// </summary>
+    /// <param name="request">Password reset request</param>
+    /// <returns>Result of password reset request</returns>
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] PasswordResetRequest request)
+    {
+        try
+        {
+            var result = await _authService.RequestPasswordResetAsync(request.Email);
+            return Ok(new { message = result });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset request");
+            return StatusCode(500, new { error = _localizer["ErrorDuringPasswordReset"] });
+        }
+    }
+
+    /// <summary>
+    /// Reset password with token
+    /// </summary>
+    /// <param name="request">Reset password request</param>
+    /// <returns>Result of password reset</returns>
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            var result = await _authService.ResetPasswordAsync(request);
+            if (result)
+            {
+                return Ok(new { message = "Password reset successfully" });
+            }
+            else
+            {
+                return BadRequest(new { error = "Invalid or expired reset token" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset");
+            return StatusCode(500, new { error = _localizer["ErrorDuringPasswordReset"] });
         }
     }
 }

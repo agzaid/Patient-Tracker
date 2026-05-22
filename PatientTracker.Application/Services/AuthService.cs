@@ -16,14 +16,16 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
+    private readonly IPasswordResetService _passwordResetService;
 
-    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration, IUnitOfWork unitOfWork, IStringLocalizer<ErrorMessages> localizer)
+    public AuthService(IUserRepository userRepository, IJwtService jwtService, IConfiguration configuration, IUnitOfWork unitOfWork, IStringLocalizer<ErrorMessages> localizer, IPasswordResetService passwordResetService)
     {
         _userRepository = userRepository;
         _jwtService = jwtService;
         _configuration = configuration;
         _unitOfWork = unitOfWork;
         _localizer = localizer;
+        _passwordResetService = passwordResetService;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -190,5 +192,15 @@ public class AuthService : IAuthService
     public async Task<bool> LogoutAsync(string refreshToken)
     {
         return await _userRepository.RevokeRefreshTokenAsync(refreshToken);
+    }
+
+    public async Task<string> RequestPasswordResetAsync(string email)
+    {
+        return await _passwordResetService.GeneratePasswordResetTokenAsync(email);
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        return await _passwordResetService.ResetPasswordAsync(request);
     }
 }

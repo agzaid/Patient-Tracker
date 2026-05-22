@@ -170,6 +170,8 @@ builder.Services.AddScoped<IDiagnosisExtractionService, DiagnosisExtractionServi
 builder.Services.AddScoped<IDocumentChatService, DocumentChatService>();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
 builder.Services.AddScoped<IRateLimitingService, RateLimitingService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 
 // HttpClient for Gemini
 builder.Services.AddHttpClient<IGeminiService, GeminiService>(client =>

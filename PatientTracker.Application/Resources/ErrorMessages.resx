@@ -87,6 +87,12 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>Access denied. You don't have permission to perform this action</value>
   </data>
+  <data name="ErrorDuringPasswordReset" xml:space="preserve">
+    <value>Error during password reset</value>
+  </data>
+  <data name="PasswordResetEmailSent" xml:space="preserve">
+    <value>If an account with this email exists, a password reset link has been sent</value>
+  </data>
   <data name="ErrorDuringRegistration" xml:space="preserve">
     <value>An error occurred during registration</value>
   </data>

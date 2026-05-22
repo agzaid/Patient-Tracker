@@ -21,6 +21,7 @@ public interface IDocumentService
     Task<DocumentDto?> GetDocumentAsync(int documentId, int userId);
     Task<DocumentDto?> GetDocumentForSharedLinkAsync(int documentId);
     Task<string> SaveOptimizedImageAsync(IFormFile file, string folder);
+    Task<string> SaveDocumentAsync(IFormFile file, string folder);
 }
 
 public class DocumentService : IDocumentService
@@ -160,15 +161,35 @@ public class DocumentService : IDocumentService
             throw new InvalidOperationException(_localizer["NoFileUploaded"]);
         }
 
-        var maxFileSize = _configuration.GetValue<long>("Uploads:MaxFileSize", 50 * 1024 * 1024); // 50MB default
-        if (file.Length > maxFileSize)
-        {
-            throw new InvalidOperationException(_localizer["FileTooLarge"]);
-        }
-
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var isImage = _allowedImageExtensions.Contains(extension);
         var isDocument = _allowedDocumentExtensions.Contains(extension);
+
+        // Check file size based on type
+        if (isImage)
+        {
+            var maxImageFileSize = _configuration.GetValue<long>("Uploads:MaxImageFileSize", 10 * 1024 * 1024); // 10MB default
+            if (file.Length > maxImageFileSize)
+            {
+                throw new InvalidOperationException(string.Format(_localizer["FileSizeExceedsMaximum"], maxImageFileSize / (1024 * 1024)));
+            }
+        }
+        else if (isDocument)
+        {
+            var maxDocumentFileSize = _configuration.GetValue<long>("Uploads:MaxDocumentFileSize", 10 * 1024 * 1024); // 10MB default
+            if (file.Length > maxDocumentFileSize)
+            {
+                throw new InvalidOperationException(string.Format(_localizer["FileSizeExceedsMaximum"], maxDocumentFileSize / (1024 * 1024)));
+            }
+        }
+        else
+        {
+            var maxFileSize = _configuration.GetValue<long>("Uploads:MaxFileSize", 50 * 1024 * 1024); // 50MB default
+            if (file.Length > maxFileSize)
+            {
+                throw new InvalidOperationException(_localizer["FileTooLarge"]);
+            }
+        }
 
         if (!isImage && !isDocument)
         {
@@ -207,7 +228,7 @@ public class DocumentService : IDocumentService
         };
     }
 
-    private async Task<string> SaveDocumentAsync(IFormFile file, string folder)
+    public async Task<string> SaveDocumentAsync(IFormFile file, string folder)
     {
         var uploadsPath = _configuration["Uploads:Path"] ?? "uploads";
         var userDirectory = Path.Combine(uploadsPath, folder);
