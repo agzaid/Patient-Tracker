@@ -89,14 +89,15 @@ public class RateLimitingService : IRateLimitingService
         // Increment counters
         user.GeminiRequestsToday++;
         user.GeminiRequestsLastMinute++;
+        user.AllGeminiRequests++;
         user.LastGeminiRequestTime = now;
         user.UpdatedAt = now;
 
         _userRepository.Update(user);
         await _unitOfWork.CompleteAsync();
 
-        _logger.LogInformation("Recorded Gemini request for user {UserId}. Daily: {DailyCount}/{MaxDaily}, Minute: {MinuteCount}/{MaxMinute}",
-            userId, user.GeminiRequestsToday, MaxRequestsPerDay, user.GeminiRequestsLastMinute, MaxRequestsPerMinute);
+        _logger.LogInformation("Recorded Gemini request for user {UserId}. Daily: {DailyCount}/{MaxDaily}, Minute: {MinuteCount}/{MaxMinute}, Total: {TotalCount}",
+            userId, user.GeminiRequestsToday, MaxRequestsPerDay, user.GeminiRequestsLastMinute, MaxRequestsPerMinute, user.AllGeminiRequests);
     }
 
     public async Task ResetDailyCountersAsync()

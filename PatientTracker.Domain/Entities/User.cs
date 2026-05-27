@@ -18,6 +18,7 @@ public class User
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     // Gemini usage tracking
+    public int AllGeminiRequests { get; set; } = 0;
     public int GeminiRequestsToday { get; set; } = 0;
     public DateTime? LastGeminiRequestTime { get; set; }
     public int GeminiRequestsLastMinute { get; set; } = 0;
