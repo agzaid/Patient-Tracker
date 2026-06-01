@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-	</PropertyGroup>
+	  <UserSecretsId>bf7b6b53-f2d5-4dcd-a614-37fb12515632</UserSecretsId>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<None Remove="tessdata\ara.traineddata" />
