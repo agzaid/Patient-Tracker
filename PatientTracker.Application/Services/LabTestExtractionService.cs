@@ -1131,6 +1131,49 @@ Return ONLY the JSON array, no other text.";
         }
     }
 
+    public async Task<bool> UpdateOriginalFileNameAsync(int userId, int documentId, string newFileName)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var labTestDocumentRepository = scope.ServiceProvider.GetRequiredService<ILabTestDocumentRepository>();
+        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        try
+        {
+            var labTestDocument = await labTestDocumentRepository.GetByIdAsync(documentId);
+            if (labTestDocument == null || labTestDocument.UserId != userId)
+            {
+                return false;
+            }
+
+            // Update LabTestDocument
+            labTestDocument.OriginalFileName = newFileName;
+            labTestDocument.UpdatedAt = DateTime.UtcNow;
+            labTestDocumentRepository.Update(labTestDocument);
+
+            // Also update the related Document if it exists
+            if (labTestDocument.DocumentId.HasValue)
+            {
+                var document = await documentRepository.GetByIdAsync(labTestDocument.DocumentId.Value);
+                if (document != null && document.UserId == userId)
+                {
+                    document.OriginalFileName = newFileName;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    documentRepository.Update(document);
+                }
+            }
+
+            await unitOfWork.CompleteAsync();
+            _logger.LogInformation("Updated original file name for lab test document {DocumentId} to {FileName}", documentId, newFileName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating original file name for lab test document {DocumentId}", documentId);
+            throw;
+        }
+    }
+
     private decimal? ExtractConfidenceFromNotes(string? notes)
     {
         if (string.IsNullOrEmpty(notes))

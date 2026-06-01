@@ -14,11 +14,13 @@ namespace PatientTracker.API.Controllers;
 public class DiagnosesController : ControllerBase
 {
     private readonly IDiagnosisService _diagnosisService;
+    private readonly IDiagnosisExtractionService _extractionService;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-    public DiagnosesController(IDiagnosisService diagnosisService, IStringLocalizer<ErrorMessages> localizer)
+    public DiagnosesController(IDiagnosisService diagnosisService, IDiagnosisExtractionService extractionService, IStringLocalizer<ErrorMessages> localizer)
     {
         _diagnosisService = diagnosisService;
+        _extractionService = extractionService;
         _localizer = localizer;
     }
 
@@ -154,9 +156,8 @@ public class DiagnosesController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<IDiagnosisExtractionService>();
-            var document = await extractionService.GetDiagnosisDocumentWithDiagnosesAsync(userId, documentId);
-            
+            var document = await _extractionService.GetDiagnosisDocumentWithDiagnosesAsync(userId, documentId);
+
             if (document == null)
             {
                 return NotFound(new { error = _localizer["DiagnosisDocumentNotFound"] });
@@ -182,9 +183,8 @@ public class DiagnosesController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<IDiagnosisExtractionService>();
-            var documents = await extractionService.GetDiagnosisDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            
+            var documents = await _extractionService.GetDiagnosisDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+
             return Ok(documents);
         }
         catch (Exception ex)

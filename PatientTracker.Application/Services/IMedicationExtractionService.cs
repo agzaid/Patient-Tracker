@@ -12,4 +12,5 @@ public interface IMedicationExtractionService
     Task<bool> DeleteMedicationDocumentAsync(int userId, int documentId);
     Task<MedicationDocumentWithMedicationsDto?> GetMedicationDocumentWithMedicationsAsync(int userId, int documentId);
     Task<PaginatedResponse<MedicationDocumentDto>> GetMedicationDocumentsAsync(int userId, int page = 1, int pageSize = 10, string? search = null);
+    Task<bool> UpdateOriginalFileNameAsync(int userId, int documentId, string newFileName);
 }

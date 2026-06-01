@@ -218,6 +218,27 @@
   <data name="ErrorFetchingThumbnail" xml:space="preserve">
     <value>حدث خطأ أثناء جلب الصورة المصغرة</value>
   </data>
+  <data name="ErrorFetchingExtractionStatus" xml:space="preserve">
+    <value>حدث خطأ أثناء جلب حالة الاستخراج</value>
+  </data>
+  <data name="ErrorRetryingExtraction" xml:space="preserve">
+    <value>حدث خطأ أثناء إعادة محاولة الاستخراج</value>
+  </data>
+  <data name="ErrorUpdatingDiagnoses" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث التشخيصات</value>
+  </data>
+  <data name="ErrorUpdatingLabTests" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث فحوصات المختبر</value>
+  </data>
+  <data name="ErrorUpdatingMedications" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث الأدوية</value>
+  </data>
+  <data name="ErrorUpdatingFileName" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث اسم الملف</value>
+  </data>
+  <data name="FileNameUpdatedSuccessfully" xml:space="preserve">
+    <value>تم تحديث اسم الملف بنجاح</value>
+  </data>
   
   <!-- Medication -->
   <data name="MedicationNotFound" xml:space="preserve">

@@ -12,4 +12,5 @@ public interface ILabTestExtractionService
     Task<bool> DeleteLabTestDocumentAsync(int userId, int documentId);
     Task<LabTestDocumentWithTestsDto?> GetLabTestDocumentWithTestsAsync(int userId, int documentId);
     Task<PaginatedResponse<LabTestDocumentDto>> GetLabTestDocumentsAsync(int userId, int page = 1, int pageSize = 10, string? search = null);
+    Task<bool> UpdateOriginalFileNameAsync(int userId, int documentId, string newFileName);
 }

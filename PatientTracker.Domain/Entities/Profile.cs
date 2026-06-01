@@ -26,7 +26,10 @@ public class Profile
     
     [MaxLength(500)]
     public string? Address { get; set; }
-    
+
+    [MaxLength(100)]
+    public string? Nationality { get; set; }
+
     // JSON arrays stored as strings
     public string? Allergies { get; set; } = "[]";
     public string? ChronicDiseases { get; set; } = "[]";

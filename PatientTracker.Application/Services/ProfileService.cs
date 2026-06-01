@@ -39,6 +39,7 @@ public class ProfileService : IProfileService
             Phone = profile.Phone,
             Email = profile.Email,
             Address = profile.Address,
+            Nationality = profile.Nationality,
             Allergies = string.IsNullOrEmpty(profile.Allergies) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(profile.Allergies) ?? new List<string>(),
             ChronicDiseases = string.IsNullOrEmpty(profile.ChronicDiseases) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(profile.ChronicDiseases) ?? new List<string>(),
             EmergencyContactName = profile.EmergencyContactName,
@@ -74,6 +75,7 @@ public class ProfileService : IProfileService
             Phone = request.Phone,
             Email = request.Email,
             Address = request.Address,
+            Nationality = request.Nationality,
             Allergies = JsonSerializer.Serialize(request.Allergies),
             ChronicDiseases = JsonSerializer.Serialize(request.ChronicDiseases),
             EmergencyContactName = request.EmergencyContactName,
@@ -97,6 +99,7 @@ public class ProfileService : IProfileService
             Phone = profile.Phone,
             Email = profile.Email,
             Address = profile.Address,
+            Nationality = profile.Nationality,
             Allergies = request.Allergies,
             ChronicDiseases = request.ChronicDiseases,
             EmergencyContactName = profile.EmergencyContactName,
@@ -122,6 +125,7 @@ public class ProfileService : IProfileService
                 Phone = request.Phone,
                 Email = request.Email,
                 Address = request.Address,
+                Nationality = request.Nationality,
                 Allergies = request.Allergies,
                 ChronicDiseases = request.ChronicDiseases,
                 EmergencyContactName = request.EmergencyContactName,
@@ -137,6 +141,7 @@ public class ProfileService : IProfileService
         profile.Phone = request.Phone;
         profile.Email = request.Email;
         profile.Address = request.Address;
+        profile.Nationality = request.Nationality;
         profile.Allergies = JsonSerializer.Serialize(request.Allergies);
         profile.ChronicDiseases = JsonSerializer.Serialize(request.ChronicDiseases);
         profile.EmergencyContactName = request.EmergencyContactName;
@@ -158,6 +163,7 @@ public class ProfileService : IProfileService
             Phone = profile.Phone,
             Email = profile.Email,
             Address = profile.Address,
+            Nationality = profile.Nationality,
             Allergies = request.Allergies,
             ChronicDiseases = request.ChronicDiseases,
             EmergencyContactName = profile.EmergencyContactName,

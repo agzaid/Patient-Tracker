@@ -218,6 +218,27 @@
   <data name="ErrorFetchingThumbnail" xml:space="preserve">
     <value>An error occurred while fetching the thumbnail</value>
   </data>
+  <data name="ErrorFetchingExtractionStatus" xml:space="preserve">
+    <value>An error occurred while fetching extraction status</value>
+  </data>
+  <data name="ErrorRetryingExtraction" xml:space="preserve">
+    <value>An error occurred while retrying extraction</value>
+  </data>
+  <data name="ErrorUpdatingDiagnoses" xml:space="preserve">
+    <value>An error occurred while updating diagnoses</value>
+  </data>
+  <data name="ErrorUpdatingLabTests" xml:space="preserve">
+    <value>An error occurred while updating lab tests</value>
+  </data>
+  <data name="ErrorUpdatingMedications" xml:space="preserve">
+    <value>An error occurred while updating medications</value>
+  </data>
+  <data name="ErrorUpdatingFileName" xml:space="preserve">
+    <value>An error occurred while updating file name</value>
+  </data>
+  <data name="FileNameUpdatedSuccessfully" xml:space="preserve">
+    <value>File name updated successfully</value>
+  </data>
   
   <!-- Medication -->
   <data name="MedicationNotFound" xml:space="preserve">

@@ -94,7 +94,7 @@ public class DiagnosisExtractionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while fetching extraction status" });
+            return StatusCode(500, new { error = _localizer["ErrorFetchingExtractionStatus"] });
         }
     }
 
@@ -118,7 +118,7 @@ public class DiagnosisExtractionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrying extraction" });
+            return StatusCode(500, new { error = _localizer["ErrorRetryingExtraction"] });
         }
     }
 
@@ -143,7 +143,7 @@ public class DiagnosisExtractionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating diagnoses" });
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingDiagnoses"] });
         }
     }
 
@@ -159,17 +159,44 @@ public class DiagnosisExtractionController : ControllerBase
         {
             var userId = GetUserId();
             var result = await _extractionService.DeleteDiagnosisDocumentAsync(userId, documentId);
-            
+
             if (!result)
             {
-                return NotFound(new { error = "Document not found" });
+                return NotFound(new { error = _localizer["FileNotFound"] });
             }
 
-            return Ok(new { message = "Document deleted successfully" });
+            return Ok(new { message = _localizer["DocumentDeletedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting document" });
+            return StatusCode(500, new { error = _localizer["ErrorDeletingDocument"] });
+        }
+    }
+
+    /// <summary>
+    /// Update the original file name of a diagnosis document
+    /// </summary>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="request">Request with new file name</param>
+    /// <returns>Update result</returns>
+    [HttpPatch("{documentId}/filename")]
+    public async Task<IActionResult> UpdateOriginalFileName(int documentId, [FromBody] UpdateFileNameRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var result = await _extractionService.UpdateOriginalFileNameAsync(userId, documentId, request.NewFileName);
+
+            if (!result)
+            {
+                return NotFound(new { error = _localizer["FileNotFound"] });
+            }
+
+            return Ok(new { message = _localizer["FileNameUpdatedSuccessfully"] });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = _localizer["ErrorUpdatingFileName"] });
         }
     }
 

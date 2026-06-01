@@ -29,8 +29,8 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
-// Localization
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+// Localization - Resource files are in PatientTracker.Application.Resources namespace
+// Don't set ResourcesPath since resource files are already in the correct namespace
 
 // Configure supported cultures
 var supportedCultures = new[] { "en-US", "ar-SA" };
@@ -106,8 +106,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// If the connection string is not found, fall back to local connection
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = "Server=.;Database=PatientTracker;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString, o => o.EnableRetryOnFailure()));
 

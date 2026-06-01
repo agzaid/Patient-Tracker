@@ -13,6 +13,7 @@ public class ProfileDto
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Address { get; set; }
+    public string? Nationality { get; set; }
     public List<string> Allergies { get; set; } = new();
     public List<string> ChronicDiseases { get; set; } = new();
     public string? EmergencyContactName { get; set; }
@@ -31,6 +32,7 @@ public class CreateProfileRequest
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Address { get; set; }
+    public string? Nationality { get; set; }
     public List<string> Allergies { get; set; } = new();
     public List<string> ChronicDiseases { get; set; } = new();
     public string? EmergencyContactName { get; set; }
@@ -47,6 +49,7 @@ public class UpdateProfileRequest
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Address { get; set; }
+    public string? Nationality { get; set; }
     public List<string> Allergies { get; set; } = new();
     public List<string> ChronicDiseases { get; set; } = new();
     public string? EmergencyContactName { get; set; }

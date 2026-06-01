@@ -478,6 +478,49 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
         };
     }
 
+    public async Task<bool> UpdateOriginalFileNameAsync(int userId, int documentId, string newFileName)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
+        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        try
+        {
+            var diagnosisDocument = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+            if (diagnosisDocument == null || diagnosisDocument.UserId != userId)
+            {
+                return false;
+            }
+
+            // Update DiagnosisDocument
+            diagnosisDocument.OriginalFileName = newFileName;
+            diagnosisDocument.UpdatedAt = DateTime.UtcNow;
+            diagnosisDocumentRepository.Update(diagnosisDocument);
+
+            // Also update the related Document if it exists
+            if (diagnosisDocument.DocumentId.HasValue)
+            {
+                var document = await documentRepository.GetByIdAsync(diagnosisDocument.DocumentId.Value);
+                if (document != null && document.UserId == userId)
+                {
+                    document.OriginalFileName = newFileName;
+                    document.UpdatedAt = DateTime.UtcNow;
+                    documentRepository.Update(document);
+                }
+            }
+
+            await unitOfWork.CompleteAsync();
+            _logger.LogInformation("Updated original file name for diagnosis document {DocumentId} to {FileName}", documentId, newFileName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating original file name for diagnosis document {DocumentId}", documentId);
+            throw;
+        }
+    }
+
     private async Task ProcessExtractionAsync(int documentId)
     {
         using var scope = _scopeFactory.CreateScope();
