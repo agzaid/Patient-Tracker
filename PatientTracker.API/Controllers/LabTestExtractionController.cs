@@ -33,20 +33,9 @@ public class LabTestExtractionController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<LabTestExtractionResponse>> UploadAndExtract([FromForm] UploadLabTestDocumentRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.UploadAndExtractAsync(userId, request);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUploadingDocument"] });
-        }
+        var userId = GetUserId();
+        var result = await _extractionService.UploadAndExtractAsync(userId, request);
+        return Ok(result);
     }
 
     /// <summary>
@@ -58,20 +47,9 @@ public class LabTestExtractionController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<LabTestExtractionResponse>> UploadAndExtractTesseract([FromForm] UploadLabTestDocumentRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.UploadAndExtractTesseractAsync(userId, request);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUploadingDocument"] });
-        }
+        var userId = GetUserId();
+        var result = await _extractionService.UploadAndExtractTesseractAsync(userId, request);
+        return Ok(result);
     }
 
     /// <summary>
@@ -82,20 +60,9 @@ public class LabTestExtractionController : ControllerBase
     [HttpGet("{documentId}")]
     public async Task<ActionResult<LabTestExtractionResponse>> GetExtractionStatus(int documentId)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.GetExtractionStatusAsync(userId, documentId);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingExtractionStatus"] });
-        }
+        var userId = GetUserId();
+        var result = await _extractionService.GetExtractionStatusAsync(userId, documentId);
+        return Ok(result);
     }
 
     /// <summary>
@@ -106,20 +73,9 @@ public class LabTestExtractionController : ControllerBase
     [HttpPost("{documentId}/retry")]
     public async Task<ActionResult<LabTestExtractionResponse>> RetryExtraction(int documentId)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.RetryExtractionAsync(userId, documentId);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorRetryingExtraction"] });
-        }
+        var userId = GetUserId();
+        var result = await _extractionService.RetryExtractionAsync(userId, documentId);
+        return Ok(result);
     }
 
     /// <summary>
@@ -131,20 +87,9 @@ public class LabTestExtractionController : ControllerBase
     [HttpPut("{documentId}/tests")]
     public async Task<ActionResult<List<LabTestDto>>> UpdateExtractedTests(int documentId, [FromBody] List<UpdateExtractedLabTestRequest> updates)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.UpdateExtractedTestsAsync(userId, documentId, updates);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingLabTests"] });
-        }
+        var userId = GetUserId();
+        var result = await _extractionService.UpdateExtractedTestsAsync(userId, documentId, updates);
+        return Ok(result);
     }
 
     /// <summary>
@@ -155,22 +100,15 @@ public class LabTestExtractionController : ControllerBase
     [HttpDelete("{documentId}")]
     public async Task<IActionResult> DeleteLabTestDocument(int documentId)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.DeleteLabTestDocumentAsync(userId, documentId);
+        var userId = GetUserId();
+        var result = await _extractionService.DeleteLabTestDocumentAsync(userId, documentId);
 
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["FileNotFound"] });
-            }
-
-            return Ok(new { message = _localizer["DocumentDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
+        if (!result)
         {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingDocument"] });
+            return NotFound(new { error = _localizer["FileNotFound"] });
         }
+
+        return Ok(new { message = _localizer["DocumentDeletedSuccessfully"] });
     }
 
     /// <summary>
@@ -182,22 +120,15 @@ public class LabTestExtractionController : ControllerBase
     [HttpPatch("{documentId}/filename")]
     public async Task<IActionResult> UpdateOriginalFileName(int documentId, [FromBody] UpdateFileNameRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _extractionService.UpdateOriginalFileNameAsync(userId, documentId, request.NewFileName);
+        var userId = GetUserId();
+        var result = await _extractionService.UpdateOriginalFileNameAsync(userId, documentId, request.NewFileName);
 
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["FileNotFound"] });
-            }
-
-            return Ok(new { message = _localizer["FileNameUpdatedSuccessfully"] });
-        }
-        catch (Exception ex)
+        if (!result)
         {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingFileName"] });
+            return NotFound(new { error = _localizer["FileNotFound"] });
         }
+
+        return Ok(new { message = _localizer["FileNameUpdatedSuccessfully"] });
     }
 
     private int GetUserId()

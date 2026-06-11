@@ -30,16 +30,9 @@ public class RadiologyController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<RadiologyScanDto>>> GetRadiologyScans([FromQuery] QueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedScans = await _radiologyService.GetRadiologyScansPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            return Ok(paginatedScans);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingRadiologyScans"] });
-        }
+        var userId = GetUserId();
+        var paginatedScans = await _radiologyService.GetRadiologyScansPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        return Ok(paginatedScans);
     }
 
     /// <summary>
@@ -50,22 +43,15 @@ public class RadiologyController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<RadiologyScanDto>> GetRadiologyScan(int id)
     {
-        try
+        var userId = GetUserId();
+        var scan = await _radiologyService.GetRadiologyScanAsync(id, userId);
+        
+        if (scan == null)
         {
-            var userId = GetUserId();
-            var scan = await _radiologyService.GetRadiologyScanAsync(id, userId);
-            
-            if (scan == null)
-            {
-                return NotFound(new { error = _localizer["RadiologyNotFound"] });
-            }
+            return NotFound(new { error = _localizer["RadiologyNotFound"] });
+        }
 
-            return Ok(scan);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingRadiologyScan"] });
-        }
+        return Ok(scan);
     }
 
     /// <summary>
@@ -76,20 +62,9 @@ public class RadiologyController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<RadiologyScanDto>> CreateRadiologyScan([FromBody] CreateRadiologyScanRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var scan = await _radiologyService.CreateRadiologyScanAsync(userId, request);
-            return CreatedAtAction(nameof(GetRadiologyScan), new { id = scan.Id }, scan);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingRadiology"] });
-        }
+        var userId = GetUserId();
+        var scan = await _radiologyService.CreateRadiologyScanAsync(userId, request);
+        return CreatedAtAction(nameof(GetRadiologyScan), new { id = scan.Id }, scan);
     }
 
     /// <summary>
@@ -101,20 +76,9 @@ public class RadiologyController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<RadiologyScanDto>> UpdateRadiologyScan(int id, [FromBody] UpdateRadiologyScanRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var scan = await _radiologyService.UpdateRadiologyScanAsync(id, userId, request);
-            return Ok(scan);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingRadiology"] });
-        }
+        var userId = GetUserId();
+        var scan = await _radiologyService.UpdateRadiologyScanAsync(id, userId, request);
+        return Ok(scan);
     }
 
     /// <summary>
@@ -125,22 +89,15 @@ public class RadiologyController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRadiologyScan(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _radiologyService.DeleteRadiologyScanAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _radiologyService.DeleteRadiologyScanAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = "Radiology scan not found" });
-            }
+            return NotFound(new { error = "Radiology scan not found" });
+        }
 
-            return Ok(new { message = _localizer["RadiologyDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingRadiology"] });
-        }
+        return Ok(new { message = _localizer["RadiologyDeletedSuccessfully"] });
     }
 
     private int GetUserId()

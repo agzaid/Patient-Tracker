@@ -1,4 +1,4 @@
-   using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using PatientTracker.Application.DTOs;
@@ -30,16 +30,9 @@ public class MedicationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<MedicationDto>>> GetMedications([FromQuery] QueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedMedications = await _medicationService.GetMedicationsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            return Ok(paginatedMedications);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingMedications"] });
-        }
+        var userId = GetUserId();
+        var paginatedMedications = await _medicationService.GetMedicationsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        return Ok(paginatedMedications);
     }
 
     /// <summary>
@@ -50,22 +43,15 @@ public class MedicationsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<MedicationDto>> GetMedication(int id)
     {
-        try
+        var userId = GetUserId();
+        var medication = await _medicationService.GetMedicationAsync(id, userId);
+        
+        if (medication == null)
         {
-            var userId = GetUserId();
-            var medication = await _medicationService.GetMedicationAsync(id, userId);
-            
-            if (medication == null)
-            {
-                return NotFound(new { error = _localizer["MedicationNotFound"] });
-            }
+            return NotFound(new { error = _localizer["MedicationNotFound"] });
+        }
 
-            return Ok(medication);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingMedication"] });
-        }
+        return Ok(medication);
     }
 
     /// <summary>
@@ -76,20 +62,9 @@ public class MedicationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MedicationDto>> CreateMedication([FromBody] CreateMedicationRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var medication = await _medicationService.CreateMedicationAsync(userId, request);
-            return CreatedAtAction(nameof(GetMedication), new { id = medication.Id }, medication);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingMedication"] });
-        }
+        var userId = GetUserId();
+        var medication = await _medicationService.CreateMedicationAsync(userId, request);
+        return CreatedAtAction(nameof(GetMedication), new { id = medication.Id }, medication);
     }
 
     /// <summary>
@@ -101,20 +76,9 @@ public class MedicationsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<MedicationDto>> UpdateMedication(int id, [FromBody] UpdateMedicationRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var medication = await _medicationService.UpdateMedicationAsync(id, userId, request);
-            return Ok(medication);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingMedication"] });
-        }
+        var userId = GetUserId();
+        var medication = await _medicationService.UpdateMedicationAsync(id, userId, request);
+        return Ok(medication);
     }
 
     /// <summary>
@@ -125,22 +89,15 @@ public class MedicationsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMedication(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _medicationService.DeleteMedicationAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _medicationService.DeleteMedicationAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["MedicationNotFound"] });
-            }
+            return NotFound(new { error = _localizer["MedicationNotFound"] });
+        }
 
-            return Ok(new { message = _localizer["MedicationDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingMedication"] });
-        }
+        return Ok(new { message = _localizer["MedicationDeletedSuccessfully"] });
     }
 
     /// <summary>
@@ -151,23 +108,16 @@ public class MedicationsController : ControllerBase
     [HttpGet("documents/{documentId}")]
     public async Task<ActionResult<MedicationDocumentWithMedicationsDto>> GetMedicationDocumentWithMedications(int documentId)
     {
-        try
+        var userId = GetUserId();
+        var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
+        var document = await extractionService.GetMedicationDocumentWithMedicationsAsync(userId, documentId);
+        
+        if (document == null)
         {
-            var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
-            var document = await extractionService.GetMedicationDocumentWithMedicationsAsync(userId, documentId);
-            
-            if (document == null)
-            {
-                return NotFound(new { error = _localizer["MedicationDocumentNotFound"] });
-            }
+            return NotFound(new { error = _localizer["MedicationDocumentNotFound"] });
+        }
 
-            return Ok(document);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingMedicationDocument"] });
-        }
+        return Ok(document);
     }
 
     /// <summary>
@@ -179,18 +129,11 @@ public class MedicationsController : ControllerBase
     public async Task<ActionResult<PaginatedResponse<MedicationDocumentDto>>> GetMedicationDocuments(
         [FromQuery] MedicationDocumentsQueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
-            var documents = await extractionService.GetMedicationDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            
-            return Ok(documents);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingMedications"] });
-        }
+        var userId = GetUserId();
+        var extractionService = HttpContext.RequestServices.GetRequiredService<IMedicationExtractionService>();
+        var documents = await extractionService.GetMedicationDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        
+        return Ok(documents);
     }
 
     private int GetUserId()

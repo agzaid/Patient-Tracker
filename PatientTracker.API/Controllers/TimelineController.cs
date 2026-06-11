@@ -26,16 +26,9 @@ public class TimelineController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<TimelineItemDto>>> GetTimeline([FromQuery] TimelineQueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedTimeline = await _timelineService.GetTimelinePaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search, parameters.TypeFilter, parameters.DateRange);
-            return Ok(paginatedTimeline);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while fetching timeline" });
-        }
+        var userId = GetUserId();
+        var paginatedTimeline = await _timelineService.GetTimelinePaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search, parameters.TypeFilter, parameters.DateRange);
+        return Ok(paginatedTimeline);
     }
 
     private int GetUserId()

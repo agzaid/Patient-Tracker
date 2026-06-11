@@ -29,16 +29,9 @@ public class SharedLinksController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SharedLinkDto>>> GetSharedLinks()
     {
-        try
-        {
-            var userId = GetUserId();
-            var links = await _sharedLinkService.GetSharedLinksAsync(userId);
-            return Ok(links);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingSharedLinks"] });
-        }
+        var userId = GetUserId();
+        var links = await _sharedLinkService.GetSharedLinksAsync(userId);
+        return Ok(links);
     }
 
     /// <summary>
@@ -49,20 +42,9 @@ public class SharedLinksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SharedLinkDto>> CreateSharedLink([FromBody] CreateSharedLinkRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var link = await _sharedLinkService.CreateSharedLinkAsync(userId, request);
-            return CreatedAtAction(nameof(GetSharedLinks), new { }, link);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingSharedLink"] });
-        }
+        var userId = GetUserId();
+        var link = await _sharedLinkService.CreateSharedLinkAsync(userId, request);
+        return CreatedAtAction(nameof(GetSharedLinks), new { }, link);
     }
 
     /// <summary>
@@ -73,22 +55,15 @@ public class SharedLinksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSharedLink(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _sharedLinkService.DeleteSharedLinkAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _sharedLinkService.DeleteSharedLinkAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["SharedLinkNotFound"] });
-            }
+            return NotFound(new { error = _localizer["SharedLinkNotFound"] });
+        }
 
-            return Ok(new { message = _localizer["SharedLinkDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingSharedLink"] });
-        }
+        return Ok(new { message = _localizer["SharedLinkDeletedSuccessfully"] });
     }
 
     /// <summary>
@@ -99,22 +74,15 @@ public class SharedLinksController : ControllerBase
     [HttpPut("{id}/toggle")]
     public async Task<IActionResult> ToggleSharedLink(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _sharedLinkService.ToggleSharedLinkAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _sharedLinkService.ToggleSharedLinkAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["SharedLinkNotFound"] });
-            }
+            return NotFound(new { error = _localizer["SharedLinkNotFound"] });
+        }
 
-            return Ok(new { message = _localizer["SharedLinkStatusUpdatedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorTogglingSharedLink"] });
-        }
+        return Ok(new { message = _localizer["SharedLinkStatusUpdatedSuccessfully"] });
     }
 
     private int GetUserId()
@@ -152,21 +120,14 @@ public class ShareController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<SharedProfileResponse>> GetSharedProfile(string token)
     {
-        try
+        var profile = await _sharedLinkService.GetSharedProfileAsync(token); 
+        
+        if (profile == null)
         {
-            var profile = await _sharedLinkService.GetSharedProfileAsync(token); 
-            
-            if (profile == null)
-            {
-                return NotFound(new { error = "Shared link not found, expired, or inactive" });
-            }
+            return NotFound(new { error = "Shared link not found, expired, or inactive" });
+        }
 
-            return Ok(profile);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while fetching shared profile" });
-        }
+        return Ok(profile);
     }
 
     /// <summary>
@@ -179,49 +140,42 @@ public class ShareController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> DownloadSharedDocument(string token, int documentId)
     {
-        try
+        // Validate token and get shared profile
+        var profile = await _sharedLinkService.GetSharedProfileAsync(token);
+        
+        if (profile == null)
         {
-            // Validate token and get shared profile
-            var profile = await _sharedLinkService.GetSharedProfileAsync(token);
-            
-            if (profile == null)
-            {
-                return NotFound(new { error = "Shared link not found, expired, or inactive" });
-            }
-
-            // Get document without user validation (since this is a shared link)
-            var document = await _documentService.GetDocumentForSharedLinkAsync(documentId);
-            
-            if (document == null)
-            {
-                return NotFound(new { error = "Document not found" });
-            }
-
-            // Check if document belongs to the shared profile owner
-            if (document.UserId != profile.Profile.UserId)
-            {
-                return Forbid();
-            }
-
-            if (!System.IO.File.Exists(document.FilePath))
-            {
-                return NotFound(new { error = "File not found" });
-            }
-
-            // Validate file path to prevent directory traversal
-            var fullPath = Path.GetFullPath(document.FilePath);
-            var uploadsPath = Path.GetFullPath(_configuration["Uploads:Path"] ?? "uploads");
-            if (!fullPath.StartsWith(uploadsPath))
-            {
-                return BadRequest(new { error = "Invalid file path" });
-            }
-
-            var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
-            return File(fileStream, document.ContentType, document.OriginalFileName);
+            return NotFound(new { error = "Shared link not found, expired, or inactive" });
         }
-        catch (Exception ex)
+
+        // Get document without user validation (since this is a shared link)
+        var document = await _documentService.GetDocumentForSharedLinkAsync(documentId);
+        
+        if (document == null)
         {
-            return StatusCode(500, new { error = "An error occurred while downloading document" });
+            return NotFound(new { error = "Document not found" });
         }
+
+        // Check if document belongs to the shared profile owner
+        if (document.UserId != profile.Profile.UserId)
+        {
+            return Forbid();
+        }
+
+        if (!System.IO.File.Exists(document.FilePath))
+        {
+            return NotFound(new { error = "File not found" });
+        }
+
+        // Validate file path to prevent directory traversal
+        var fullPath = Path.GetFullPath(document.FilePath);
+        var uploadsPath = Path.GetFullPath(_configuration["Uploads:Path"] ?? "uploads");
+        if (!fullPath.StartsWith(uploadsPath))
+        {
+            return BadRequest(new { error = "Invalid file path" });
+        }
+
+        var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
+        return File(fileStream, document.ContentType, document.OriginalFileName);
     }
 }

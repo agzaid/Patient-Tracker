@@ -30,16 +30,9 @@ public class LabTestsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<LabTestDto>>> GetLabTests([FromQuery] QueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedLabTests = await _labTestService.GetLabTestsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            return Ok(paginatedLabTests);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTests"] });
-        }
+        var userId = GetUserId();
+        var paginatedLabTests = await _labTestService.GetLabTestsPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        return Ok(paginatedLabTests);
     }
 
     /// <summary>
@@ -50,22 +43,15 @@ public class LabTestsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<LabTestDto>> GetLabTest(int id)
     {
-        try
+        var userId = GetUserId();
+        var labTest = await _labTestService.GetLabTestAsync(id, userId);
+        
+        if (labTest == null)
         {
-            var userId = GetUserId();
-            var labTest = await _labTestService.GetLabTestAsync(id, userId);
-            
-            if (labTest == null)
-            {
-                return NotFound(new { error = _localizer["LabTestNotFound"] });
-            }
+            return NotFound(new { error = _localizer["LabTestNotFound"] });
+        }
 
-            return Ok(labTest);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTest"] });
-        }
+        return Ok(labTest);
     }
 
     /// <summary>
@@ -76,20 +62,9 @@ public class LabTestsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<LabTestDto>> CreateLabTest([FromBody] CreateLabTestRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var labTest = await _labTestService.CreateLabTestAsync(userId, request);
-            return CreatedAtAction(nameof(GetLabTest), new { id = labTest.Id }, labTest);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingLabTest"] });
-        }
+        var userId = GetUserId();
+        var labTest = await _labTestService.CreateLabTestAsync(userId, request);
+        return CreatedAtAction(nameof(GetLabTest), new { id = labTest.Id }, labTest);
     }
 
     /// <summary>
@@ -101,20 +76,9 @@ public class LabTestsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<LabTestDto>> UpdateLabTest(int id, [FromBody] UpdateLabTestRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var labTest = await _labTestService.UpdateLabTestAsync(id, userId, request);
-            return Ok(labTest);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingLabTest"] });
-        }
+        var userId = GetUserId();
+        var labTest = await _labTestService.UpdateLabTestAsync(id, userId, request);
+        return Ok(labTest);
     }
 
     /// <summary>
@@ -125,62 +89,41 @@ public class LabTestsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLabTest(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _labTestService.DeleteLabTestAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _labTestService.DeleteLabTestAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = "Lab test not found" });
-            }
+            return NotFound(new { error = "Lab test not found" });
+        }
 
-            return Ok(new { message = _localizer["LabTestDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingLabTest"] });
-        }
+        return Ok(new { message = _localizer["LabTestDeletedSuccessfully"] });
     }
 
     [HttpGet("documents")]
     public async Task<ActionResult<PaginatedResponse<LabTestDocumentDto>>> GetLabTestDocuments(
         [FromQuery] LabTestDocumentsQueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
-            var documents = await extractionService.GetLabTestDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            
-            return Ok(documents);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTests"] });
-        }
+        var userId = GetUserId();
+        var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
+        var documents = await extractionService.GetLabTestDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        
+        return Ok(documents);
     }
 
     [HttpGet("documents/{documentId}")]
     public async Task<ActionResult<LabTestDocumentWithTestsDto>> GetLabTestDocumentWithTests(int documentId)
     {
-        try
+        var userId = GetUserId();
+        var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
+        var document = await extractionService.GetLabTestDocumentWithTestsAsync(userId, documentId);
+        
+        if (document == null)
         {
-            var userId = GetUserId();
-            var extractionService = HttpContext.RequestServices.GetRequiredService<ILabTestExtractionService>();
-            var document = await extractionService.GetLabTestDocumentWithTestsAsync(userId, documentId);
-            
-            if (document == null)
-            {
-                return NotFound(new { error = _localizer["LabTestNotFound"] });
-            }
+            return NotFound(new { error = _localizer["LabTestNotFound"] });
+        }
 
-            return Ok(document);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingLabTest"] });
-        }
+        return Ok(document);
     }
 
     /// <summary>

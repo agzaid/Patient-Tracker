@@ -39,60 +39,31 @@ public class ProfileController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProfileDto>> CreateProfile([FromBody] CreateProfileRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var profile = await _profileService.CreateProfileAsync(userId, request);
-            return CreatedAtAction(nameof(GetProfile), new { }, profile);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingProfile"] });
-        }
+        var userId = GetUserId();
+        var profile = await _profileService.CreateProfileAsync(userId, request);
+        return CreatedAtAction(nameof(GetProfile), new { }, profile);
     }
 
     [HttpPut]
     public async Task<ActionResult<ProfileDto>> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var profile = await _profileService.UpdateProfileAsync(userId, request);
-            return Ok(profile);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingProfile"] });
-        }
+        var userId = GetUserId();
+        var profile = await _profileService.UpdateProfileAsync(userId, request);
+        return Ok(profile);
     }
 
     [HttpDelete]
     public async Task<IActionResult> DeleteProfile()
     {
-        try
+        var userId = GetUserId();
+        var result = await _profileService.DeleteProfileAsync(userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _profileService.DeleteProfileAsync(userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["ProfileNotFound"] });
-            }
+            return NotFound(new { error = _localizer["ProfileNotFound"] });
+        }
 
-            return Ok(new { message = _localizer["ProfileDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingProfile"] });
-        }
+        return Ok(new { message = _localizer["ProfileDeletedSuccessfully"] });
     }
 
     private int GetUserId()

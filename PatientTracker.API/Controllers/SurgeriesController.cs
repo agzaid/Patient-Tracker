@@ -30,16 +30,9 @@ public class SurgeriesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<SurgeryDto>>> GetSurgeries([FromQuery] QueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedSurgeries = await _surgeryService.GetSurgeriesPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            return Ok(paginatedSurgeries);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingSurgeries"] });
-        }
+        var userId = GetUserId();
+        var paginatedSurgeries = await _surgeryService.GetSurgeriesPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        return Ok(paginatedSurgeries);
     }
 
     /// <summary>
@@ -50,22 +43,15 @@ public class SurgeriesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<SurgeryDto>> GetSurgery(int id)
     {
-        try
+        var userId = GetUserId();
+        var surgery = await _surgeryService.GetSurgeryAsync(id, userId);
+        
+        if (surgery == null)
         {
-            var userId = GetUserId();
-            var surgery = await _surgeryService.GetSurgeryAsync(id, userId);
-            
-            if (surgery == null)
-            {
-                return NotFound(new { error = _localizer["SurgeryNotFound"] });
-            }
+            return NotFound(new { error = _localizer["SurgeryNotFound"] });
+        }
 
-            return Ok(surgery);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingSurgery"] });
-        }
+        return Ok(surgery);
     }
 
     /// <summary>
@@ -76,20 +62,9 @@ public class SurgeriesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SurgeryDto>> CreateSurgery([FromBody] CreateSurgeryRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var surgery = await _surgeryService.CreateSurgeryAsync(userId, request);
-            return CreatedAtAction(nameof(GetSurgery), new { id = surgery.Id }, surgery);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingSurgery"] });
-        }
+        var userId = GetUserId();
+        var surgery = await _surgeryService.CreateSurgeryAsync(userId, request);
+        return CreatedAtAction(nameof(GetSurgery), new { id = surgery.Id }, surgery);
     }
 
     /// <summary>
@@ -101,20 +76,9 @@ public class SurgeriesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<SurgeryDto>> UpdateSurgery(int id, [FromBody] UpdateSurgeryRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var surgery = await _surgeryService.UpdateSurgeryAsync(id, userId, request);
-            return Ok(surgery);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingSurgery"] });
-        }
+        var userId = GetUserId();
+        var surgery = await _surgeryService.UpdateSurgeryAsync(id, userId, request);
+        return Ok(surgery);
     }
 
     /// <summary>
@@ -125,22 +89,15 @@ public class SurgeriesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSurgery(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _surgeryService.DeleteSurgeryAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _surgeryService.DeleteSurgeryAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = "Surgery not found" });
-            }
+            return NotFound(new { error = "Surgery not found" });
+        }
 
-            return Ok(new { message = _localizer["SurgeryDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingSurgery"] });
-        }
+        return Ok(new { message = _localizer["SurgeryDeletedSuccessfully"] });
     }
 
     private int GetUserId()
