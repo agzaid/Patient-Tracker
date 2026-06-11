@@ -462,4 +462,7 @@
   <data name="GeminiEmptyResponse" xml:space="preserve">
     <value>أرجعت واجهة برمجة تطبيقات Gemini استجابة فارغة</value>
   </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>تم تأمين الحساب مؤقتاً بسبب كثرة محاولات تسجيل الدخول الفاشلة. حاول مرة أخرى خلال {0} دقيقة/دقائق.</value>
+  </data>
 </root>

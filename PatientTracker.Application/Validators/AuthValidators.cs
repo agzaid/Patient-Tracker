@@ -13,7 +13,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters")
+            .MinimumLength(8).WithMessage("Password must be at least 8 characters")
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)").WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one digit");
     }
 }
@@ -59,7 +59,8 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
 
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("New password is required")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters long");
+            .MinimumLength(8).WithMessage("Password must be at least 8 characters long")
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)").WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one digit");
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("Password confirmation is required")

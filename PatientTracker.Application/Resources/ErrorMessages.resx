@@ -462,4 +462,7 @@
   <data name="GeminiEmptyResponse" xml:space="preserve">
     <value>Gemini API returned an empty response</value>
   </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Account is temporarily locked due to too many failed login attempts. Try again in {0} minute(s).</value>
+  </data>
 </root>

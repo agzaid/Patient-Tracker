@@ -1,22 +1,16 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using PatientTracker.API.Middleware;
-using PatientTracker.Infrastructure.Data;
-using System.Globalization;
-using System.Reflection;
-using PatientTracker.Infrastructure.Services;
-using PatientTracker.Infrastructure.Repositories;
-using PatientTracker.Application.Services;
-using PatientTracker.Application.Validators;
-using PatientTracker.Application.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Serilog;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using PatientTracker.API.Middleware;
+using PatientTracker.Application.Interfaces;
+using PatientTracker.Application.Services;
+using PatientTracker.Application.Validators;
+using PatientTracker.Infrastructure.Data;
+using PatientTracker.Infrastructure.Repositories;
+using PatientTracker.Infrastructure.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,18 +85,6 @@ builder.Services.AddSwaggerGen(c =>
     // Handle enums as strings
     c.UseInlineDefinitionsForEnums();
 
-    // Ignore problematic properties
-    //c.IgnoreObsoleteProperties();
-    //c.IgnoreObsoleteActions();
-
-    //// Add filters for better error handling
-    //c.OperationFilter<PatientTracker.API.Filters.SwaggerOperationFilter>();
-    //c.SchemaFilter<PatientTracker.API.Filters.SwaggerSchemaFilter>();
-
-    // Include XML Comments - temporarily disabled
-    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    //c.IncludeXmlComments(xmlPath);
 });
 
 // Database
@@ -139,23 +121,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("PatientTrackerPolicy", policy =>
     {
-        policy.WithOrigins("https://sehty.org", "http://sehty.org", "https://api.sehty.org", "http://localhost:8081")
+        policy.WithOrigins("https://sehty.org", "http://sehty.org", "https://api.sehty.org", "http://localhost:8081", "https://agzaidtp34-001-site3.rtempurl.com", "http://agzaidtp34-001-site3.rtempurl.com")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowReactApp", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8081")
-//              .AllowAnyMethod()
-//              .AllowAnyHeader()
-//              .AllowCredentials();
-//    });
-//});
 
 // Dependency Injection
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -207,20 +179,21 @@ builder.Services.AddScoped<ISharedLinkRepository, SharedLinkRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Patient Tracker API v1");
-    // If you want swagger at the root (site3.rtempurl.com/), keep this:
-    c.RoutePrefix = string.Empty;
-});
-
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+// Enable Swagger for all environments (remove for production if exposing sensitive API details)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Patient Tracker API v1");
+    c.RoutePrefix = string.Empty;
+});
+
+// HTTPS redirection disabled for shared hosting (handled by provider's load balancer)
+// app.UseHttpsRedirection();
 
 // CORS - must be early in the pipeline
 app.UseCors("PatientTrackerPolicy");

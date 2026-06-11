@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using PatientTracker.Application.Common;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Resources;
 using PatientTracker.Application.Services;
@@ -17,22 +16,19 @@ public class AuthController : ControllerBase
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshTokenRequest> _refreshTokenValidator;
     private readonly IStringLocalizer<ErrorMessages> _localizer;
-    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IAuthService authService,
         IValidator<RegisterRequest> registerValidator,
         IValidator<LoginRequest> loginValidator,
         IValidator<RefreshTokenRequest> refreshTokenValidator,
-        IStringLocalizer<ErrorMessages> localizer,
-        ILogger<AuthController> logger)
+        IStringLocalizer<ErrorMessages> localizer)
     {
         _authService = authService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _refreshTokenValidator = refreshTokenValidator;
         _localizer = localizer;
-        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -44,24 +40,8 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = validationResult.Errors });
         }
 
-        try
-        {
-            var response = await _authService.RegisterAsync(request);
-            return Ok(response);
-        }
-        catch (BusinessException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during registration");
-            return StatusCode(500, new { error = _localizer["ErrorDuringRegistration"] });
-        }
+        var response = await _authService.RegisterAsync(request);
+        return Ok(response);
     }
 
     [HttpPost("login")]
@@ -73,24 +53,8 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = validationResult.Errors });
         }
 
-        try
-        {
-            var response = await _authService.LoginAsync(request);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (BusinessException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during login");
-            return StatusCode(500, new { error = _localizer["ErrorDuringLogin"] });
-        }
+        var response = await _authService.LoginAsync(request);
+        return Ok(response);
     }
 
     [HttpPost("refresh")]
@@ -102,43 +66,15 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = validationResult.Errors });
         }
 
-        try
-        {
-            var response = await _authService.RefreshTokenAsync(request);
-            return Ok(response);
-        }
-        catch (BusinessException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during token refresh");
-            return StatusCode(500, new { error = _localizer["ErrorDuringTokenRefresh"] });
-        }
+        var response = await _authService.RefreshTokenAsync(request);
+        return Ok(response);
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
     {
-        try
-        {
-            await _authService.LogoutAsync(request.RefreshToken);
-            return Ok(new { message = _localizer["LoggedOutSuccessfully"] });
-        }
-        catch (BusinessException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during logout");
-            return StatusCode(500, new { error = _localizer["ErrorDuringLogout"] });
-        }
+        await _authService.LogoutAsync(request.RefreshToken);
+        return Ok(new { message = _localizer["LoggedOutSuccessfully"] });
     }
 
     /// <summary>
@@ -149,16 +85,8 @@ public class AuthController : ControllerBase
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] PasswordResetRequest request)
     {
-        try
-        {
-            var result = await _authService.RequestPasswordResetAsync(request.Email);
-            return Ok(new { message = result });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during password reset request");
-            return StatusCode(500, new { error = _localizer["ErrorDuringPasswordReset"] });
-        }
+        var result = await _authService.RequestPasswordResetAsync(request.Email);
+        return Ok(new { message = result });
     }
 
     /// <summary>
@@ -169,22 +97,11 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
-        try
+        var result = await _authService.ResetPasswordAsync(request);
+        if (!result)
         {
-            var result = await _authService.ResetPasswordAsync(request);
-            if (result)
-            {
-                return Ok(new { message = "Password reset successfully" });
-            }
-            else
-            {
-                return BadRequest(new { error = "Invalid or expired reset token" });
-            }
+            return BadRequest(new { error = "Invalid or expired reset token" });
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during password reset");
-            return StatusCode(500, new { error = _localizer["ErrorDuringPasswordReset"] });
-        }
+        return Ok(new { message = "Password reset successfully" });
     }
 }

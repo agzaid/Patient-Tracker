@@ -32,16 +32,9 @@ public class DiagnosesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<DiagnosisDto>>> GetDiagnoses([FromQuery] QueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var paginatedDiagnoses = await _diagnosisService.GetDiagnosesPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
-            return Ok(paginatedDiagnoses);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnoses"] });
-        }
+        var userId = GetUserId();
+        var paginatedDiagnoses = await _diagnosisService.GetDiagnosesPaginatedAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        return Ok(paginatedDiagnoses);
     }
 
     /// <summary>
@@ -52,22 +45,15 @@ public class DiagnosesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<DiagnosisDto>> GetDiagnosis(int id)
     {
-        try
+        var userId = GetUserId();
+        var diagnosis = await _diagnosisService.GetDiagnosisAsync(id, userId);
+        
+        if (diagnosis == null)
         {
-            var userId = GetUserId();
-            var diagnosis = await _diagnosisService.GetDiagnosisAsync(id, userId);
-            
-            if (diagnosis == null)
-            {
-                return NotFound(new { error = _localizer["DiagnosisNotFound"] });
-            }
+            return NotFound(new { error = _localizer["DiagnosisNotFound"] });
+        }
 
-            return Ok(diagnosis);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnosis"] });
-        }
+        return Ok(diagnosis);
     }
 
     /// <summary>
@@ -78,20 +64,9 @@ public class DiagnosesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<DiagnosisDto>> CreateDiagnosis([FromBody] CreateDiagnosisRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var diagnosis = await _diagnosisService.CreateDiagnosisAsync(userId, request);
-            return CreatedAtAction(nameof(GetDiagnosis), new { id = diagnosis.Id }, diagnosis);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorCreatingDiagnosis"] });
-        }
+        var userId = GetUserId();
+        var diagnosis = await _diagnosisService.CreateDiagnosisAsync(userId, request);
+        return CreatedAtAction(nameof(GetDiagnosis), new { id = diagnosis.Id }, diagnosis);
     }
 
     /// <summary>
@@ -103,20 +78,9 @@ public class DiagnosesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<DiagnosisDto>> UpdateDiagnosis(int id, [FromBody] UpdateDiagnosisRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var diagnosis = await _diagnosisService.UpdateDiagnosisAsync(id, userId, request);
-            return Ok(diagnosis);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorUpdatingDiagnosis"] });
-        }
+        var userId = GetUserId();
+        var diagnosis = await _diagnosisService.UpdateDiagnosisAsync(id, userId, request);
+        return Ok(diagnosis);
     }
 
     /// <summary>
@@ -127,22 +91,15 @@ public class DiagnosesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDiagnosis(int id)
     {
-        try
+        var userId = GetUserId();
+        var result = await _diagnosisService.DeleteDiagnosisAsync(id, userId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _diagnosisService.DeleteDiagnosisAsync(id, userId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = "Diagnosis not found" });
-            }
+            return NotFound(new { error = "Diagnosis not found" });
+        }
 
-            return Ok(new { message = _localizer["DiagnosisDeletedSuccessfully"] });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingDiagnosis"] });
-        }
+        return Ok(new { message = _localizer["DiagnosisDeletedSuccessfully"] });
     }
 
     /// <summary>
@@ -153,22 +110,15 @@ public class DiagnosesController : ControllerBase
     [HttpGet("documents/{documentId}")]
     public async Task<ActionResult<DiagnosisDocumentWithDiagnosesDto>> GetDiagnosisDocumentWithDiagnoses(int documentId)
     {
-        try
-        {
-            var userId = GetUserId();
-            var document = await _extractionService.GetDiagnosisDocumentWithDiagnosesAsync(userId, documentId);
+        var userId = GetUserId();
+        var document = await _extractionService.GetDiagnosisDocumentWithDiagnosesAsync(userId, documentId);
 
-            if (document == null)
-            {
-                return NotFound(new { error = _localizer["DiagnosisDocumentNotFound"] });
-            }
-
-            return Ok(document);
-        }
-        catch (Exception ex)
+        if (document == null)
         {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnosisDocument"] });
+            return NotFound(new { error = _localizer["DiagnosisDocumentNotFound"] });
         }
+
+        return Ok(document);
     }
 
     /// <summary>
@@ -180,17 +130,10 @@ public class DiagnosesController : ControllerBase
     public async Task<ActionResult<PaginatedResponse<DiagnosisDocumentDto>>> GetDiagnosisDocuments(
         [FromQuery] DiagnosisDocumentsQueryParameters parameters)
     {
-        try
-        {
-            var userId = GetUserId();
-            var documents = await _extractionService.GetDiagnosisDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
+        var userId = GetUserId();
+        var documents = await _extractionService.GetDiagnosisDocumentsAsync(userId, parameters.Page, parameters.PageSize, parameters.Search);
 
-            return Ok(documents);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingDiagnoses"] });
-        }
+        return Ok(documents);
     }
 
     private int GetUserId()

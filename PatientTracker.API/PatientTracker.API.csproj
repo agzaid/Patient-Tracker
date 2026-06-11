@@ -6,23 +6,11 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
 	</PropertyGroup>
-
 	<ItemGroup>
-		<None Remove="tessdata\ara.traineddata" />
-		<None Remove="tessdata\Arabic.traineddata" />
-		<None Remove="tessdata\eng.traineddata" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="tessdata\ara.traineddata">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="tessdata\Arabic.traineddata">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="tessdata\eng.traineddata">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+	  <Compile Remove="tessdata\**" />
+	  <Content Remove="tessdata\**" />
+	  <EmbeddedResource Remove="tessdata\**" />
+	  <None Remove="tessdata\**" />
 	</ItemGroup>
 
 	<ItemGroup>

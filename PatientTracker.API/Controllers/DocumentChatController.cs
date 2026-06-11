@@ -32,45 +32,23 @@ public class DocumentChatController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<DocumentChatResponse>> AskAboutDocument([FromBody] DocumentChatRequest request)
     {
-        try
-        {
-            var userId = GetUserId();
-            var response = await _chatService.AskAboutDocumentAsync(userId, request);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorProcessingRequest"] });
-        }
+        var userId = GetUserId();
+        var response = await _chatService.AskAboutDocumentAsync(userId, request);
+        return Ok(response);
     }
     [HttpGet("history")]
     public async Task<ActionResult<PaginatedChatResponse>> GetChatHistory(
         [FromQuery] GetChatHistoryParameters parameters)
     {
-        try
+        var userId = GetUserId();
+        var request = new GetChatHistoryRequest
         {
-            var userId = GetUserId();
-            var request = new GetChatHistoryRequest
-            {
-                DocumentId = parameters.DocumentId,
-                Page = parameters.Page,
-                PageSize = parameters.PageSize
-            };
-            var response = await _chatService.GetChatHistoryAsync(userId, request);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorFetchingChatHistory"] });
-        }
+            DocumentId = parameters.DocumentId,
+            Page = parameters.Page,
+            PageSize = parameters.PageSize
+        };
+        var response = await _chatService.GetChatHistoryAsync(userId, request);
+        return Ok(response);
     }
 
     /// <summary>
@@ -81,22 +59,15 @@ public class DocumentChatController : ControllerBase
     [HttpDelete("history/{documentId}")]
     public async Task<IActionResult> DeleteChatHistory(int documentId)
     {
-        try
+        var userId = GetUserId();
+        var result = await _chatService.DeleteChatHistoryAsync(userId, documentId);
+        
+        if (!result)
         {
-            var userId = GetUserId();
-            var result = await _chatService.DeleteChatHistoryAsync(userId, documentId);
-            
-            if (!result)
-            {
-                return NotFound(new { error = _localizer["DocumentNotFound"] });
-            }
+            return NotFound(new { error = _localizer["DocumentNotFound"] });
+        }
 
-            return Ok(new { message = "Chat history deleted successfully" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = _localizer["ErrorDeletingChatHistory"] });
-        }
+        return Ok(new { message = "Chat history deleted successfully" });
     }
 
     private int GetUserId()
