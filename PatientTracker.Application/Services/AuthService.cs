@@ -59,11 +59,12 @@ public class AuthService : IAuthService
         });
 
         var refreshToken = _jwtService.GenerateRefreshToken();
+        var refreshTokenExpirationDays = double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!, System.Globalization.CultureInfo.InvariantCulture);
         var refreshTokenEntity = new RefreshToken
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!)),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpirationDays),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -87,9 +88,40 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+
+        if (user == null)
         {
             throw new BusinessException(ErrorCodes.InvalidCredentials, _localizer["InvalidCredentials"]);
+        }
+
+        // Check if account is locked out
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        {
+            var remaining = (int)Math.Ceiling((user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
+            throw new BusinessException(ErrorCodes.AccessDenied, string.Format(_localizer["AccountLockedOut"], remaining));
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        {
+            user.FailedLoginAttempts++;
+            if (user.FailedLoginAttempts >= 5)
+            {
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                user.FailedLoginAttempts = 0;
+            }
+            user.UpdatedAt = DateTime.UtcNow;
+            _userRepository.Update(user);
+            await _unitOfWork.CompleteAsync();
+            throw new BusinessException(ErrorCodes.InvalidCredentials, _localizer["InvalidCredentials"]);
+        }
+
+        // Reset failed attempts on successful login
+        if (user.FailedLoginAttempts > 0 || user.LockoutEnd.HasValue)
+        {
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            _userRepository.Update(user);
         }
 
         // Generate tokens
@@ -102,11 +134,12 @@ public class AuthService : IAuthService
         });
 
         var refreshToken = _jwtService.GenerateRefreshToken();
+        var refreshTokenExpirationDays = double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!, System.Globalization.CultureInfo.InvariantCulture);
         var refreshTokenEntity = new RefreshToken
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!)),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpirationDays),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -163,11 +196,12 @@ public class AuthService : IAuthService
         });
 
         var newRefreshToken = _jwtService.GenerateRefreshToken();
+        var refreshTokenExpirationDays = double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!, System.Globalization.CultureInfo.InvariantCulture);
         var newRefreshTokenEntity = new RefreshToken
         {
             Token = newRefreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpiration"]!)),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpirationDays),
             CreatedAt = DateTime.UtcNow
         };
 
