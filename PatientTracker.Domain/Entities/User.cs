@@ -17,6 +17,13 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
+    // Login lockout tracking
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? LockoutEnd { get; set; }
+
+    // Password reset token (hashed, single-use)
+    public string? PasswordResetTokenHash { get; set; }
+
     // Gemini usage tracking
     public int AllGeminiRequests { get; set; } = 0;
     public int GeminiRequestsToday { get; set; } = 0;

@@ -30,11 +30,12 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Role, "User")
         };
 
+        var accessTokenExpirationMinutes = double.Parse(_configuration["Jwt:AccessTokenExpiration"]!, System.Globalization.CultureInfo.InvariantCulture);
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:AccessTokenExpiration"]!)),
+            expires: DateTime.UtcNow.AddMinutes(accessTokenExpirationMinutes),
             signingCredentials: credentials
         );
 

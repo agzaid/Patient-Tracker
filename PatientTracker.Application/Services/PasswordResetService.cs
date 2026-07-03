@@ -10,6 +10,7 @@ using PatientTracker.Domain.Entities;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using AppValidationException = PatientTracker.Application.Common.ValidationException;
@@ -41,6 +42,18 @@ public class PasswordResetService : IPasswordResetService
         _unitOfWork = unitOfWork;
     }
 
+    private byte[] GetResetKey()
+    {
+        var keyString = _configuration["PasswordReset:Key"] ?? _configuration["Jwt:Key"];
+        return Encoding.ASCII.GetBytes(keyString!);
+    }
+
+    private static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
+    }
+
     public async Task<string> GeneratePasswordResetTokenAsync(string email)
     {
         var user = await _userRepository.GetByEmailAsync(email);
@@ -55,7 +68,7 @@ public class PasswordResetService : IPasswordResetService
         }
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+        var key = GetResetKey();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
@@ -64,7 +77,7 @@ public class PasswordResetService : IPasswordResetService
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("type", "password-reset")
             }),
-            Expires = DateTime.UtcNow.AddHours(1), // Token expires in 1 hour
+            Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _configuration["Jwt:Issuer"],
             Audience = _configuration["Jwt:Audience"]
@@ -73,7 +86,12 @@ public class PasswordResetService : IPasswordResetService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
-        // Generate reset link (you might want to configure the base URL in appsettings)
+        // Store hashed token on the user for single-use validation
+        user.PasswordResetTokenHash = HashToken(tokenString);
+        user.UpdatedAt = DateTime.UtcNow;
+        _userRepository.Update(user);
+        await _unitOfWork.CompleteAsync();
+
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:8081";
         var resetLink = $"{baseUrl}/reset-password?token={tokenString}";
 
@@ -95,7 +113,7 @@ public class PasswordResetService : IPasswordResetService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = GetResetKey();
             
             var validationParameters = new TokenValidationParameters
             {
@@ -111,22 +129,20 @@ public class PasswordResetService : IPasswordResetService
 
             var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
             
-            // Check if this is a password reset token
             var typeClaim = principal.FindFirst("type")?.Value;
             if (typeClaim != "password-reset")
-            {
                 return false;
-            }
 
-            // Check if user still exists
             var email = principal.FindFirst(ClaimTypes.Email)?.Value;
-            if (!string.IsNullOrEmpty(email))
-            {
-                var user = await _userRepository.GetByEmailAsync(email);
-                return user != null;
-            }
+            if (string.IsNullOrEmpty(email))
+                return false;
 
-            return false;
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null)
+                return false;
+
+            // Check the token is the latest one issued (single-use)
+            return user.PasswordResetTokenHash == HashToken(token);
         }
         catch (Exception ex)
         {
@@ -173,7 +189,7 @@ public class PasswordResetService : IPasswordResetService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = GetResetKey();
 
             var validationParameters = new TokenValidationParameters
             {
@@ -201,6 +217,8 @@ public class PasswordResetService : IPasswordResetService
 
             // Hash the new password
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            // Invalidate the reset token so it cannot be reused
+            user.PasswordResetTokenHash = null;
             user.UpdatedAt = DateTime.UtcNow;
 
             _userRepository.Update(user);

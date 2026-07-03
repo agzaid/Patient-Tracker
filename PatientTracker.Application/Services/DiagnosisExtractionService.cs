@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using PatientTracker.Application.DTOs;
 using PatientTracker.Application.Interfaces;
 using PatientTracker.Application.Common;
@@ -15,6 +16,10 @@ namespace PatientTracker.Application.Services;
 public class DiagnosisExtractionService : IDiagnosisExtractionService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IDiagnosisDocumentRepository _diagnosisDocumentRepository;
+    private readonly IDiagnosisRepository _diagnosisRepository;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IGeminiService _geminiService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<DiagnosisExtractionService> _logger;
@@ -23,6 +28,10 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public DiagnosisExtractionService(
         IServiceScopeFactory scopeFactory,
+        IDiagnosisDocumentRepository diagnosisDocumentRepository,
+        IDiagnosisRepository diagnosisRepository,
+        IDocumentRepository documentRepository,
+        IUnitOfWork unitOfWork,
         IGeminiService geminiService,
         IConfiguration configuration,
         ILogger<DiagnosisExtractionService> logger,
@@ -30,6 +39,10 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
         IDocumentService documentService)
     {
         _scopeFactory = scopeFactory;
+        _diagnosisDocumentRepository = diagnosisDocumentRepository;
+        _diagnosisRepository = diagnosisRepository;
+        _documentRepository = documentRepository;
+        _unitOfWork = unitOfWork;
         _geminiService = geminiService;
         _configuration = configuration;
         _logger = logger;
@@ -39,11 +52,6 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<DiagnosisExtractionResponse> UploadAndExtractAsync(int userId, UploadDiagnosisDocumentRequest request)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
         try
         {
             _logger.LogInformation("Starting diagnosis document upload for user {UserId}", userId);
@@ -95,8 +103,8 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 FilePath = filePath
             };
 
-            document = await documentRepository.AddAsync(document);
-            await unitOfWork.CompleteAsync();
+            document = await _documentRepository.AddAsync(document);
+            await _unitOfWork.CompleteAsync();
 
             var diagnosisDocument = new DiagnosisDocument
             {
@@ -110,8 +118,8 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 ExtractionStatus = DiagnosisExtractionStatus.Pending
             };
 
-            diagnosisDocumentRepository.Add(diagnosisDocument);
-            await unitOfWork.CompleteAsync();
+            _diagnosisDocumentRepository.Add(diagnosisDocument);
+            await _unitOfWork.CompleteAsync();
 
             _ = Task.Run(() => ProcessExtractionAsync(diagnosisDocument.Id));
 
@@ -148,11 +156,6 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<DiagnosisExtractionResponse> UploadAndExtractTesseractAsync(int userId, UploadDiagnosisDocumentRequest request)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
         try
         {
             _logger.LogInformation("Starting diagnosis document upload with Tesseract for user {UserId}", userId);
@@ -190,8 +193,8 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 FilePath = filePath
             };
 
-            document = await documentRepository.AddAsync(document);
-            await unitOfWork.CompleteAsync();
+            document = await _documentRepository.AddAsync(document);
+            await _unitOfWork.CompleteAsync();
 
             var diagnosisDocument = new DiagnosisDocument
             {
@@ -205,8 +208,8 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 ExtractionStatus = DiagnosisExtractionStatus.Pending
             };
 
-            diagnosisDocumentRepository.Add(diagnosisDocument);
-            await unitOfWork.CompleteAsync();
+            _diagnosisDocumentRepository.Add(diagnosisDocument);
+            await _unitOfWork.CompleteAsync();
 
             _ = Task.Run(() => ProcessTesseractExtractionAsync(diagnosisDocument.Id));
 
@@ -243,17 +246,13 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<DiagnosisExtractionResponse> GetExtractionStatusAsync(int userId, int documentId)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var diagnosisRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisRepository>();
-
-        var document = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+        var document = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
         if (document == null || document.UserId != userId)
         {
             throw new InvalidOperationException("Document not found");
         }
 
-        var diagnoses = await diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
+        var diagnoses = await _diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
 
         return new DiagnosisExtractionResponse
         {
@@ -291,10 +290,7 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<DiagnosisExtractionResponse> RetryExtractionAsync(int userId, int documentId)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-
-        var document = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+        var document = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
         if (document == null || document.UserId != userId)
         {
             throw new InvalidOperationException("Document not found");
@@ -302,10 +298,9 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
         document.ExtractionStatus = DiagnosisExtractionStatus.Pending;
         document.RetryCount++;
-        diagnosisDocumentRepository.Update(document);
+        _diagnosisDocumentRepository.Update(document);
         
-        using var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        await unitOfWork.CompleteAsync();
+        await _unitOfWork.CompleteAsync();
 
         _ = Task.Run(() => ProcessExtractionAsync(documentId));
 
@@ -314,12 +309,7 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<List<DiagnosisDto>> UpdateExtractedDiagnosesAsync(int userId, int documentId, List<UpdateExtractedDiagnosisRequest> updates)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var diagnosisRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var document = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+        var document = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
         if (document == null || document.UserId != userId)
         {
             throw new InvalidOperationException("Document not found");
@@ -328,7 +318,7 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
         var updatedDiagnoses = new List<Diagnosis>();
         foreach (var update in updates)
         {
-            var diagnosis = await diagnosisRepository.GetByIdAsync(update.Id);
+            var diagnosis = await _diagnosisRepository.GetByIdAsync(update.Id);
             if (diagnosis != null && diagnosis.UserId == userId)
             {
                 diagnosis.DiagnosisName = update.DiagnosisName;
@@ -336,14 +326,14 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
                 diagnosis.Status = update.Status;
                 diagnosis.Notes = update.Notes;
                 diagnosis.UpdatedAt = DateTime.UtcNow;
-                diagnosisRepository.Update(diagnosis);
+                _diagnosisRepository.Update(diagnosis);
                 updatedDiagnoses.Add(diagnosis);
             }
         }
 
         document.ExtractionStatus = DiagnosisExtractionStatus.ManuallyEdited;
-        diagnosisDocumentRepository.Update(document);
-        await unitOfWork.CompleteAsync();
+        _diagnosisDocumentRepository.Update(document);
+        await _unitOfWork.CompleteAsync();
 
         return updatedDiagnoses.Select(d => new DiagnosisDto
         {
@@ -361,36 +351,30 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<bool> DeleteDiagnosisDocumentAsync(int userId, int documentId)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var diagnosisRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisRepository>();
-        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var document = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+        var document = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
         if (document == null || document.UserId != userId)
         {
             return false;
         }
 
-        var diagnoses = await diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
+        var diagnoses = await _diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
         foreach (var diagnosis in diagnoses)
         {
-            diagnosisRepository.Delete(diagnosis);
+            _diagnosisRepository.Delete(diagnosis);
         }
 
-        diagnosisDocumentRepository.Delete(document);
+        _diagnosisDocumentRepository.Delete(document);
 
         if (document.DocumentId.HasValue)
         {
-            var mainDocument = await documentRepository.GetByIdAsync(document.DocumentId.Value);
+            var mainDocument = await _documentRepository.GetByIdAsync(document.DocumentId.Value);
             if (mainDocument != null)
             {
-                documentRepository.Delete(mainDocument);
+                _documentRepository.Delete(mainDocument);
             }
         }
 
-        await unitOfWork.CompleteAsync();
+        await _unitOfWork.CompleteAsync();
 
         if (File.Exists(document.FilePath))
         {
@@ -402,17 +386,13 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<DiagnosisDocumentWithDiagnosesDto?> GetDiagnosisDocumentWithDiagnosesAsync(int userId, int documentId)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var diagnosisRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisRepository>();
-
-        var document = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+        var document = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
         if (document == null || document.UserId != userId)
         {
             return null;
         }
 
-        var diagnoses = await diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
+        var diagnoses = await _diagnosisRepository.GetByDiagnosisDocumentIdAsync(documentId);
 
         return new DiagnosisDocumentWithDiagnosesDto
         {
@@ -447,11 +427,8 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<PaginatedResponse<DiagnosisDocumentDto>> GetDiagnosisDocumentsAsync(int userId, int page = 1, int pageSize = 10, string? search = null)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-
-        var documents = await diagnosisDocumentRepository.GetByUserIdAsync(userId, page, pageSize, search);
-        var totalCount = await diagnosisDocumentRepository.GetCountByUserIdAsync(userId, search);
+        var documents = await _diagnosisDocumentRepository.GetByUserIdAsync(userId, page, pageSize, search);
+        var totalCount = await _diagnosisDocumentRepository.GetCountByUserIdAsync(userId, search);
 
         return new PaginatedResponse<DiagnosisDocumentDto>
         {
@@ -480,14 +457,9 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
 
     public async Task<bool> UpdateOriginalFileNameAsync(int userId, int documentId, string newFileName)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var diagnosisDocumentRepository = scope.ServiceProvider.GetRequiredService<IDiagnosisDocumentRepository>();
-        var documentRepository = scope.ServiceProvider.GetRequiredService<IDocumentRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
         try
         {
-            var diagnosisDocument = await diagnosisDocumentRepository.GetByIdAsync(documentId);
+            var diagnosisDocument = await _diagnosisDocumentRepository.GetByIdAsync(documentId);
             if (diagnosisDocument == null || diagnosisDocument.UserId != userId)
             {
                 return false;
@@ -496,21 +468,21 @@ public class DiagnosisExtractionService : IDiagnosisExtractionService
             // Update DiagnosisDocument
             diagnosisDocument.OriginalFileName = newFileName;
             diagnosisDocument.UpdatedAt = DateTime.UtcNow;
-            diagnosisDocumentRepository.Update(diagnosisDocument);
+            _diagnosisDocumentRepository.Update(diagnosisDocument);
 
             // Also update the related Document if it exists
             if (diagnosisDocument.DocumentId.HasValue)
             {
-                var document = await documentRepository.GetByIdAsync(diagnosisDocument.DocumentId.Value);
+                var document = await _documentRepository.GetByIdAsync(diagnosisDocument.DocumentId.Value);
                 if (document != null && document.UserId == userId)
                 {
                     document.OriginalFileName = newFileName;
                     document.UpdatedAt = DateTime.UtcNow;
-                    documentRepository.Update(document);
+                    _documentRepository.Update(document);
                 }
             }
 
-            await unitOfWork.CompleteAsync();
+            await _unitOfWork.CompleteAsync();
             _logger.LogInformation("Updated original file name for diagnosis document {DocumentId} to {FileName}", documentId, newFileName);
             return true;
         }
